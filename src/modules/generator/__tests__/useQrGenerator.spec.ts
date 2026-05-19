@@ -13,6 +13,7 @@ describe('useQrGenerator composable', () => {
   beforeEach(() => {
     localStorage.clear()
     vi.clearAllMocks()
+    useQrGenerator().reset()
   })
 
   it('should initialize with default options', () => {

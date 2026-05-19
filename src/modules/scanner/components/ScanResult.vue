@@ -6,6 +6,8 @@ const props = defineProps<{
   result: ScanResultType
   presenceMarked?: boolean
   isMarking?: boolean
+  agentConfirmed?: boolean
+  agentName?: string
 }>()
 
 defineEmits<{
@@ -52,7 +54,7 @@ const canMarkPresence = computed(() =>
 
     <div class="result-actions">
       <button
-        v-if="result.format === 'url' || result.format === 'presence'"
+        v-if="result.format === 'url'"
         class="btn btn-open"
         @click="$emit('openUrl')"
       >
@@ -66,11 +68,15 @@ const canMarkPresence = computed(() =>
         @click="$emit('markPresence')"
       >
         <span v-if="isMarking" class="spinner"></span>
-        <span v-else>✅ Marquer présence</span>
+        <span v-else>👤 Confirmer mon identité</span>
       </button>
 
-      <div v-if="presenceMarked" class="marked-badge">
-        ✅ Présence confirmée
+      <div v-if="agentConfirmed" class="confirmed-badge">
+        ✅ {{ agentName || 'Agent' }} — Présence confirmée
+      </div>
+
+      <div v-else-if="presenceMarked" class="marked-badge">
+        ✅ Présence enregistrée
       </div>
 
       <button class="btn btn-dismiss" @click="$emit('dismiss')">
@@ -208,6 +214,18 @@ const canMarkPresence = computed(() =>
   padding: 0.4rem 0.8rem;
   background: #dcfce7;
   border-radius: 8px;
+}
+
+.confirmed-badge {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #16a34a;
+  padding: 0.4rem 0.8rem;
+  background: #dcfce7;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .spinner {

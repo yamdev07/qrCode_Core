@@ -8,6 +8,7 @@ export type ScanResult = {
 export type PresenceData = {
   session_id: string
   utilisateur_id: string
+  agent_nom: string
   timestamp: string
 }
 
@@ -22,6 +23,13 @@ export type PresenceConfirmation = {
   id: string
   session_id: string
   utilisateur_id: string
+  agent_nom: string
   created_at: string
   session_nom?: string
+}
+
+export type AgentConfirmation = {
+  sessionId: string
+  agentNom: string
+  horodatage: string
 }

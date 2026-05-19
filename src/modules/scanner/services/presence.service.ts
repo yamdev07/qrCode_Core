@@ -1,8 +1,15 @@
 import { supabase } from '@core/database/supabaseClient'
 import type { PresenceData, PresenceConfirmation } from '@modules/scanner/types/scanner.types'
-import { presenceSchema } from '@core/utils/validators'
+import { z } from 'zod'
 import { ValidationError, ApiError } from '@core/errors/AppError'
 import { log } from '@core/logger/logger'
+
+const presenceSchema = z.object({
+  session_id: z.string().uuid('ID de session invalide'),
+  utilisateur_id: z.string().min(1, 'ID utilisateur requis'),
+  agent_nom: z.string().min(2, 'Le nom doit contenir au moins 2 caractères').max(100),
+  timestamp: z.string().datetime().optional()
+})
 
 export async function markPresence(data: PresenceData): Promise<PresenceConfirmation> {
   const validation = presenceSchema.safeParse(data)
@@ -20,9 +27,10 @@ export async function markPresence(data: PresenceData): Promise<PresenceConfirma
     .insert({
       session_id: validated.session_id,
       utilisateur_id: validated.utilisateur_id,
+      agent_nom: validated.agent_nom,
       timestamp: validated.timestamp || new Date().toISOString()
     })
-    .select('id, session_id, utilisateur_id, created_at')
+    .select('id, session_id, utilisateur_id, agent_nom, created_at')
     .single()
 
   if (error) {
@@ -37,7 +45,7 @@ export async function markPresence(data: PresenceData): Promise<PresenceConfirma
 export async function getSessionPresences(sessionId: string): Promise<PresenceConfirmation[]> {
   const { data, error } = await supabase
     .from('presences')
-    .select('id, session_id, utilisateur_id, created_at')
+    .select('id, session_id, utilisateur_id, agent_nom, created_at')
     .eq('session_id', sessionId)
     .order('created_at', { ascending: false })
 
@@ -62,6 +70,25 @@ export async function verifyPresence(
 
   if (error) {
     log.error('Erreur lors de la vérification de présence', error)
+    return false
+  }
+
+  return data !== null
+}
+
+export async function verifyAgentPresence(
+  sessionId: string,
+  agentNom: string
+): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('presences')
+    .select('id')
+    .eq('session_id', sessionId)
+    .eq('agent_nom', agentNom)
+    .maybeSingle()
+
+  if (error) {
+    log.error('Erreur lors de la vérification de présence agent', error)
     return false
   }
 

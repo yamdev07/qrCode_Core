@@ -17,7 +17,7 @@
       "@modules/*": ["./src/modules/*"],
       "@shared/*": ["./src/shared/*"]
     },
-    "types": ["vite/client", "node"],
+    "types": ["vite/client", "node", "vite-plugin-pwa/client"],
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "forceConsistentCasingInFileNames": true,

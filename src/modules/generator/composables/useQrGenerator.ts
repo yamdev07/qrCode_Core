@@ -5,22 +5,22 @@ import { handleError } from '@core/errors/errorHandler'
 import { urlSchema } from '@core/utils/validators'
 import type { QRCodeData } from '@modules/generator/types/generator.types'
 
+const formData = reactive<QRCodeData>({
+  url: '',
+  size: 256,
+  format: 'png',
+  errorCorrectionLevel: 'M',
+  foreground: '#000000',
+  background: '#FFFFFF',
+  margin: 4
+})
+
+const generatedQR = ref<string | null>(null)
+const isGenerating = ref(false)
+const errorMessage = ref<string | null>(null)
+
 export function useQrGenerator() {
   const { addToHistory } = useQrHistory()
-
-  const formData = reactive<QRCodeData>({
-    url: '',
-    size: 256,
-    format: 'png',
-    errorCorrectionLevel: 'M',
-    foreground: '#000000',
-    background: '#FFFFFF',
-    margin: 4
-  })
-
-  const generatedQR = ref<string | null>(null)
-  const isGenerating = ref(false)
-  const errorMessage = ref<string | null>(null)
 
   const isUrlValid = computed(() => {
     if (!formData.url) return null

@@ -5,7 +5,7 @@ import { useQrCards } from '../composables/useQrCards'
 const { generated, downloadCard, downloadAll } = useQrCards()
 
 const hasResults = computed(() => generated.value.length > 0)
-const successCount = computed(() => generated.value.filter((c) => !c.error).length)
+const successCount = computed(() => generated.value.filter((c) => c.qr).length)
 </script>
 
 <template>
@@ -13,14 +13,14 @@ const successCount = computed(() => generated.value.filter((c) => !c.error).leng
     <div class="results-header">
       <div>
         <span class="icon">🎴</span>
-        <h3>Cartes générées</h3>
+        <h3>QR générés</h3>
       </div>
       <button class="btn-download-all" @click="downloadAll">
         💾 Tout télécharger
       </button>
     </div>
 
-    <p class="results-meta">{{ successCount }} / {{ generated.length }} générée(s)</p>
+    <p class="results-meta">{{ successCount }} / {{ generated.length }} généré(s)</p>
 
     <div class="cards-grid">
       <div
@@ -29,31 +29,31 @@ const successCount = computed(() => generated.value.filter((c) => !c.error).leng
         class="card-item"
         :class="{ 'has-error': card.error }"
       >
-        <div class="card-name">{{ card.nom || 'Sans nom' }}</div>
+        <div class="card-name">
+          {{ card.nom }} <span v-if="card.prenoms">{{ card.prenoms }}</span>
+        </div>
+        <div v-if="card.poste" class="card-poste">{{ card.poste }}</div>
 
         <p v-if="card.error" class="card-error">⚠️ {{ card.error }}</p>
 
-        <div v-else class="sides">
-          <div v-if="card.recto" class="side">
-            <span class="side-label">Recto</span>
-            <div class="qr-frame">
-              <img :src="card.recto" :alt="`QR recto ${card.nom}`" />
-            </div>
-            <button class="btn-side" @click="downloadCard(card, 'recto')">
-              💾 Recto
-            </button>
+        <template v-else-if="card.qr">
+          <div class="qr-frame">
+            <img :src="card.qr" :alt="`QR ${card.nom}`" />
           </div>
-
-          <div v-if="card.verso" class="side">
-            <span class="side-label">Verso</span>
-            <div class="qr-frame">
-              <img :src="card.verso" :alt="`QR verso ${card.nom}`" />
-            </div>
-            <button class="btn-side" @click="downloadCard(card, 'verso')">
-              💾 Verso
-            </button>
-          </div>
-        </div>
+          <a
+            v-if="card.viewUrl"
+            :href="card.viewUrl"
+            target="_blank"
+            rel="noopener"
+            class="view-link"
+            :title="card.viewUrl"
+          >
+            🔗 Voir la page
+          </a>
+          <button class="btn-side" @click="downloadCard(card)">
+            💾 Télécharger le QR
+          </button>
+        </template>
       </div>
     </div>
   </div>
@@ -121,7 +121,7 @@ const successCount = computed(() => generated.value.filter((c) => !c.error).leng
 
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1.25rem;
 }
 
@@ -130,6 +130,10 @@ const successCount = computed(() => generated.value.filter((c) => !c.error).leng
   border: 1px solid #eef2f7;
   border-radius: 18px;
   padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
 }
 
 .card-item.has-error {
@@ -141,8 +145,14 @@ const successCount = computed(() => generated.value.filter((c) => !c.error).leng
   font-weight: 700;
   color: #0f172a;
   text-align: center;
-  margin-bottom: 1rem;
   font-size: 0.95rem;
+}
+
+.card-poste {
+  font-size: 0.8rem;
+  color: #64748b;
+  text-align: center;
+  margin-top: -0.3rem;
 }
 
 .card-error {
@@ -152,49 +162,39 @@ const successCount = computed(() => generated.value.filter((c) => !c.error).leng
   margin: 0;
 }
 
-.sides {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.side {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.side-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #94a3b8;
-}
-
 .qr-frame {
   background: #fff;
   padding: 0.5rem;
   border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  margin-top: 0.4rem;
 }
 
 .qr-frame img {
   display: block;
-  width: 110px;
-  height: 110px;
+  width: 140px;
+  height: 140px;
   border-radius: 6px;
 }
 
+.view-link {
+  font-size: 0.8rem;
+  color: #6366f1;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.view-link:hover {
+  text-decoration: underline;
+}
+
 .btn-side {
-  padding: 0.4rem 0.75rem;
+  padding: 0.45rem 0.9rem;
   border-radius: 10px;
   border: 1.5px solid #e2e8f0;
   background: #fff;
   color: #475569;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;

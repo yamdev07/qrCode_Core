@@ -1,14 +1,17 @@
 import { reactive, ref, computed } from 'vue'
 import {
-  generateAllCards,
+  generateQRCodeWithLogo,
   slugify,
   DEFAULT_CARD_DESIGN
 } from '@modules/generator/services/qrCard.service'
+import { uploadCard } from '@modules/generator/services/cardStorage.service'
 import { downloadQRCode } from '@modules/generator/services/qrGenerator.service'
 import { handleError } from '@core/errors/errorHandler'
-import { urlSchema } from '@core/utils/validators'
+import { personCardSchema } from '@core/utils/validators'
+import { log } from '@core/logger/logger'
 import type {
   PersonCard,
+  CardImage,
   CardDesignOptions,
   GeneratedCard
 } from '@modules/generator/types/cards.types'
@@ -17,10 +20,21 @@ function emptyPerson(): PersonCard {
   return {
     id: crypto.randomUUID(),
     nom: '',
-    rectoUrl: '',
-    versoUrl: '',
-    logo: null
+    prenoms: '',
+    poste: '',
+    logo: null,
+    images: []
   }
+}
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () =>
+      resolve(typeof reader.result === 'string' ? reader.result : '')
+    reader.onerror = () => reject(new Error('Lecture du fichier impossible'))
+    reader.readAsDataURL(file)
+  })
 }
 
 // État partagé entre les composants de la vue Cartes.
@@ -30,13 +44,13 @@ const generated = ref<GeneratedCard[]>([])
 const isGenerating = ref(false)
 const errorMessage = ref<string | null>(null)
 
+/** Une personne est prête si nom valide + au moins une image. */
+function isPersonReady(p: PersonCard): boolean {
+  return personCardSchema.safeParse(p).success && p.images.length > 0
+}
+
 export function useQrCards() {
-  const validCount = computed(
-    () =>
-      people.filter(
-        (p) => p.rectoUrl.trim() && urlSchema.safeParse(p.rectoUrl).success
-      ).length
-  )
+  const readyCount = computed(() => people.filter(isPersonReady).length)
 
   function addPerson(): void {
     people.push(emptyPerson())
@@ -53,54 +67,89 @@ export function useQrCards() {
     if (person) person.logo = dataUrl
   }
 
-  /** Lit un fichier image en data URL puis l'affecte comme logo. */
-  function setLogoFromFile(id: string, file: File): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!file.type.startsWith('image/')) {
-        reject(new Error('Le fichier doit être une image'))
-        return
-      }
-      const reader = new FileReader()
-      reader.onload = () => {
-        setLogo(id, typeof reader.result === 'string' ? reader.result : null)
-        resolve()
-      }
-      reader.onerror = () => reject(new Error('Lecture du fichier impossible'))
-      reader.readAsDataURL(file)
-    })
+  async function setLogoFromFile(id: string, file: File): Promise<void> {
+    if (!file.type.startsWith('image/')) {
+      throw new Error('Le logo doit être une image')
+    }
+    setLogo(id, await readFileAsDataUrl(file))
   }
 
+  /** Ajoute une ou plusieurs images (que le QR affichera via l'URL). */
+  async function addImages(id: string, files: FileList | File[]): Promise<void> {
+    const person = people.find((p) => p.id === id)
+    if (!person) return
+    for (const file of Array.from(files)) {
+      if (!file.type.startsWith('image/')) continue
+      const image: CardImage = {
+        id: crypto.randomUUID(),
+        name: file.name,
+        dataUrl: await readFileAsDataUrl(file)
+      }
+      person.images.push(image)
+    }
+  }
+
+  function removeImage(personId: string, imageId: string): void {
+    const person = people.find((p) => p.id === personId)
+    if (!person) return
+    const idx = person.images.findIndex((img) => img.id === imageId)
+    if (idx !== -1) person.images.splice(idx, 1)
+  }
+
+  /**
+   * Pour chaque personne prête : téléverse ses images vers Supabase, récupère
+   * l'URL de la page d'affichage, puis génère le QR (avec logo) qui pointe
+   * vers cette URL. Une erreur sur une personne n'arrête pas les autres.
+   */
   async function generate(): Promise<void> {
     errorMessage.value = null
+    const ready = people.filter(isPersonReady)
+    if (ready.length === 0) {
+      errorMessage.value =
+        'Ajoutez au moins une personne avec un nom et une image.'
+      generated.value = []
+      return
+    }
+
     isGenerating.value = true
     try {
-      generated.value = await generateAllCards([...people], { ...design })
-    } catch (error) {
-      const appError = handleError(error, 'useQrCards.generate')
-      errorMessage.value = appError.message
-      generated.value = []
+      generated.value = await Promise.all(
+        ready.map((person) => generateOne(person))
+      )
     } finally {
       isGenerating.value = false
     }
   }
 
-  function downloadCard(card: GeneratedCard, side: 'recto' | 'verso'): void {
-    const dataUrl = side === 'recto' ? card.recto : card.verso
-    if (!dataUrl) return
-    downloadQRCode(dataUrl, `${slugify(card.nom)}-${side}.png`)
+  async function generateOne(person: PersonCard): Promise<GeneratedCard> {
+    const base = {
+      id: person.id,
+      nom: person.nom,
+      prenoms: person.prenoms,
+      poste: person.poste
+    }
+    try {
+      const viewUrl = await uploadCard(person)
+      const qr = await generateQRCodeWithLogo(viewUrl, { ...design }, person.logo)
+      log.qrGenerated(viewUrl, design.size)
+      return { ...base, viewUrl, qr, error: null }
+    } catch (error) {
+      const appError = handleError(error, 'useQrCards.generateOne')
+      return { ...base, viewUrl: null, qr: null, error: appError.message }
+    }
   }
 
-  /** Télécharge tous les QR générés (recto puis verso) séquentiellement. */
+  function downloadCard(card: GeneratedCard): void {
+    if (!card.qr) return
+    const label = slugify(`${card.nom}-${card.prenoms}`)
+    downloadQRCode(card.qr, `${label}.png`)
+  }
+
   async function downloadAll(): Promise<void> {
     for (const card of generated.value) {
-      if (card.recto) {
-        downloadQRCode(card.recto, `${slugify(card.nom)}-recto.png`)
-        await waitFrame()
-      }
-      if (card.verso) {
-        downloadQRCode(card.verso, `${slugify(card.nom)}-verso.png`)
-        await waitFrame()
-      }
+      if (!card.qr) continue
+      downloadCard(card)
+      await new Promise((resolve) => setTimeout(resolve, 150))
     }
   }
 
@@ -117,20 +166,17 @@ export function useQrCards() {
     generated,
     isGenerating,
     errorMessage,
-    validCount,
+    readyCount,
+    isPersonReady,
     addPerson,
     removePerson,
     setLogo,
     setLogoFromFile,
+    addImages,
+    removeImage,
     generate,
     downloadCard,
     downloadAll,
     reset
   }
-}
-
-// Petit délai entre deux téléchargements pour éviter que le navigateur
-// n'en bloque certains lorsqu'ils sont déclenchés en rafale.
-function waitFrame(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, 150))
 }

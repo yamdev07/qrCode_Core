@@ -17,8 +17,8 @@ export const qrOptionsSchema = z.object({
 
 export const personCardSchema = z.object({
   nom: z.string().min(1, 'Le nom est requis').max(120, 'Le nom est trop long'),
-  rectoUrl: urlSchema,
-  versoUrl: urlSchema.or(z.literal('')).optional()
+  prenoms: z.string().max(120, 'Le prénom est trop long').optional().default(''),
+  poste: z.string().max(160, 'Le poste est trop long').optional().default('')
 })
 
 export const sessionSchema = z.object({

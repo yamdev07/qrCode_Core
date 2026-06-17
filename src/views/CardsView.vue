@@ -5,10 +5,11 @@ import GeneratedCardsList from '@modules/generator/components/GeneratedCardsList
 
 <template>
   <div class="cards-view">
-    <h2 class="view-title">🎴 Cartes QR (recto/verso + logo)</h2>
+    <h2 class="view-title">🎴 Cartes professionnelles (QR + images)</h2>
     <p class="view-subtitle">
-      Saisissez vos personnes, ajoutez un logo par personne et générez tous les
-      QR codes en une fois. Chaque carte a un QR recto et, si renseigné, un QR verso.
+      Saisissez Nom, Prénoms et Poste, ajoutez les images à afficher et un logo
+      par personne. À la validation, les images sont hébergées et chaque QR
+      pointe vers une page qui les affiche.
     </p>
 
     <CardBatchForm />

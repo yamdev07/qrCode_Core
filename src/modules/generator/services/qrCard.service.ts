@@ -1,12 +1,6 @@
 import QRCode from 'qrcode'
-import { personCardSchema } from '@core/utils/validators'
-import { ValidationError } from '@core/errors/AppError'
 import { log } from '@core/logger/logger'
-import type {
-  PersonCard,
-  CardDesignOptions,
-  GeneratedCard
-} from '@modules/generator/types/cards.types'
+import type { CardDesignOptions } from '@modules/generator/types/cards.types'
 
 export const DEFAULT_CARD_DESIGN: CardDesignOptions = {
   size: 320,
@@ -103,60 +97,6 @@ export async function generateQRCodeWithLogo(
   }
 
   return canvas.toDataURL('image/png')
-}
-
-/**
- * Génère les QR recto (et verso si fourni) d'une personne.
- * Valide les données et n'échoue jamais globalement : l'erreur éventuelle
- * est retournée dans le champ `error` du résultat.
- */
-export async function generatePersonCard(
-  person: PersonCard,
-  design: CardDesignOptions
-): Promise<GeneratedCard> {
-  const validation = personCardSchema.safeParse({
-    nom: person.nom,
-    rectoUrl: person.rectoUrl,
-    versoUrl: person.versoUrl
-  })
-
-  if (!validation.success) {
-    const flat = validation.error.flatten()
-    const first =
-      Object.values(flat.fieldErrors).flat()[0] ?? 'Données invalides'
-    return { id: person.id, nom: person.nom, recto: null, verso: null, error: first }
-  }
-
-  try {
-    const recto = await generateQRCodeWithLogo(person.rectoUrl, design, person.logo)
-    const verso = person.versoUrl
-      ? await generateQRCodeWithLogo(person.versoUrl, design, person.logo)
-      : null
-
-    log.qrGenerated(person.rectoUrl, design.size)
-    return { id: person.id, nom: person.nom, recto, verso, error: null }
-  } catch (error) {
-    log.error(`Échec génération carte pour ${person.nom}`, error)
-    return {
-      id: person.id,
-      nom: person.nom,
-      recto: null,
-      verso: null,
-      error: 'Échec de génération'
-    }
-  }
-}
-
-/** Génère toutes les cartes en lot. */
-export async function generateAllCards(
-  people: PersonCard[],
-  design: CardDesignOptions
-): Promise<GeneratedCard[]> {
-  const valid = people.filter((p) => p.nom.trim() || p.rectoUrl.trim())
-  if (valid.length === 0) {
-    throw new ValidationError('Ajoutez au moins une personne avec une URL recto')
-  }
-  return Promise.all(valid.map((p) => generatePersonCard(p, design)))
 }
 
 /** Slugifie un nom pour en faire un nom de fichier sûr. */

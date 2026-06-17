@@ -1,38 +1,47 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useQrCards } from '../composables/useQrCards'
-import { urlSchema } from '@core/utils/validators'
 
 const {
   people,
   design,
   isGenerating,
   errorMessage,
-  validCount,
+  readyCount,
   addPerson,
   removePerson,
   setLogo,
   setLogoFromFile,
+  addImages,
+  removeImage,
   generate,
   reset
 } = useQrCards()
 
-const logoError = ref<string | null>(null)
-
-function isUrlValid(value: string): boolean | null {
-  if (!value.trim()) return null
-  return urlSchema.safeParse(value).success
-}
+const fieldError = ref<string | null>(null)
 
 async function onLogoChange(id: string, event: Event): Promise<void> {
   const input = event.target as HTMLInputElement
   const file = input.files?.[0]
   if (!file) return
-  logoError.value = null
+  fieldError.value = null
   try {
     await setLogoFromFile(id, file)
   } catch (e) {
-    logoError.value = e instanceof Error ? e.message : 'Logo invalide'
+    fieldError.value = e instanceof Error ? e.message : 'Logo invalide'
+  } finally {
+    input.value = ''
+  }
+}
+
+async function onImagesChange(id: string, event: Event): Promise<void> {
+  const input = event.target as HTMLInputElement
+  if (!input.files?.length) return
+  fieldError.value = null
+  try {
+    await addImages(id, input.files)
+  } catch (e) {
+    fieldError.value = e instanceof Error ? e.message : 'Image invalide'
   } finally {
     input.value = ''
   }
@@ -44,13 +53,22 @@ async function onLogoChange(id: string, event: Event): Promise<void> {
     <div class="form-header">
       <span class="icon">👥</span>
       <h3>Personnes</h3>
-      <span class="count-badge">{{ validCount }} valide(s)</span>
+      <span class="count-badge">{{ readyCount }} prête(s)</span>
     </div>
 
-    <!-- Liste des personnes -->
     <div class="people-list">
       <div v-for="(person, index) in people" :key="person.id" class="person-row">
-        <div class="row-index">{{ index + 1 }}</div>
+        <div class="row-top">
+          <div class="row-index">{{ index + 1 }}</div>
+          <button
+            type="button"
+            class="btn-remove"
+            title="Supprimer cette personne"
+            @click="removePerson(person.id)"
+          >
+            🗑
+          </button>
+        </div>
 
         <div class="row-fields">
           <div class="field">
@@ -58,87 +76,99 @@ async function onLogoChange(id: string, event: Event): Promise<void> {
             <input
               v-model="person.nom"
               type="text"
-              placeholder="Nom de la personne"
+              placeholder="FASSINOU"
               class="text-input"
             />
           </div>
-
           <div class="field">
-            <label>Lien recto</label>
+            <label>Prénoms</label>
             <input
-              v-model="person.rectoUrl"
+              v-model="person.prenoms"
               type="text"
-              placeholder="https://…"
+              placeholder="Diane"
               class="text-input"
-              :class="{
-                'is-valid': isUrlValid(person.rectoUrl) === true,
-                'is-invalid': isUrlValid(person.rectoUrl) === false
-              }"
             />
           </div>
-
-          <div class="field">
-            <label>Lien verso <span class="optional">(optionnel)</span></label>
+          <div class="field full">
+            <label>Poste</label>
             <input
-              v-model="person.versoUrl"
+              v-model="person.poste"
               type="text"
-              placeholder="https://…"
+              placeholder="Juriste Collaboratrice"
               class="text-input"
-              :class="{
-                'is-valid': isUrlValid(person.versoUrl) === true,
-                'is-invalid': isUrlValid(person.versoUrl) === false
-              }"
             />
-          </div>
-
-          <div class="field logo-field">
-            <label>Logo</label>
-            <div class="logo-control">
-              <div class="logo-thumb" :class="{ empty: !person.logo }">
-                <img v-if="person.logo" :src="person.logo" alt="Logo" />
-                <span v-else>—</span>
-              </div>
-              <div class="logo-buttons">
-                <label class="btn-mini btn-upload">
-                  📁 Choisir
-                  <input
-                    type="file"
-                    accept="image/*"
-                    hidden
-                    @change="(e) => onLogoChange(person.id, e)"
-                  />
-                </label>
-                <button
-                  v-if="person.logo"
-                  type="button"
-                  class="btn-mini btn-clear"
-                  @click="setLogo(person.id, null)"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
           </div>
         </div>
 
-        <button
-          type="button"
-          class="btn-remove"
-          title="Supprimer"
-          @click="removePerson(person.id)"
-        >
-          🗑
-        </button>
+        <!-- Images (affichées par l'URL du QR) -->
+        <div class="field">
+          <label>
+            Images affichées par le QR
+            <span class="hint">— le QR pointera vers une page montrant ces images</span>
+          </label>
+          <div class="images-row">
+            <div v-for="img in person.images" :key="img.id" class="img-thumb">
+              <img :src="img.dataUrl" :alt="img.name" />
+              <button
+                type="button"
+                class="img-remove"
+                title="Retirer"
+                @click="removeImage(person.id, img.id)"
+              >
+                ✕
+              </button>
+            </div>
+            <label class="img-add">
+              <span>＋</span>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                hidden
+                @change="(e) => onImagesChange(person.id, e)"
+              />
+            </label>
+          </div>
+        </div>
+
+        <!-- Logo -->
+        <div class="field logo-field">
+          <label>Logo (au centre du QR)</label>
+          <div class="logo-control">
+            <div class="logo-thumb" :class="{ empty: !person.logo }">
+              <img v-if="person.logo" :src="person.logo" alt="Logo" />
+              <span v-else>—</span>
+            </div>
+            <div class="logo-buttons">
+              <label class="btn-mini btn-upload">
+                📁 Choisir
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  @change="(e) => onLogoChange(person.id, e)"
+                />
+              </label>
+              <button
+                v-if="person.logo"
+                type="button"
+                class="btn-mini btn-clear"
+                @click="setLogo(person.id, null)"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <p v-if="logoError" class="field-error">⚠️ {{ logoError }}</p>
+    <p v-if="fieldError" class="field-error">⚠️ {{ fieldError }}</p>
 
     <button type="button" class="btn btn-add" @click="addPerson">
       + Ajouter une personne
     </button>
 
-    <!-- Options d'apparence partagées -->
     <details class="advanced-settings">
       <summary class="settings-trigger">
         <span>Apparence des QR (appliquée à tous)</span>
@@ -188,11 +218,11 @@ async function onLogoChange(id: string, event: Event): Promise<void> {
       <button
         type="button"
         class="btn btn-primary"
-        :disabled="isGenerating || validCount === 0"
+        :disabled="isGenerating || readyCount === 0"
         @click="generate"
       >
         <span v-if="isGenerating" class="spinner"></span>
-        <span>{{ isGenerating ? 'Génération…' : `Générer ${validCount} carte(s)` }}</span>
+        <span>{{ isGenerating ? 'Téléversement…' : `Générer ${readyCount} QR` }}</span>
       </button>
     </div>
   </div>
@@ -241,23 +271,26 @@ async function onLogoChange(id: string, event: Event): Promise<void> {
 .people-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .person-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 1rem;
+  padding: 1.25rem;
   background: rgba(248, 250, 252, 0.7);
   border: 1px solid #eef2f7;
   border-radius: 16px;
 }
 
+.row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
 .row-index {
   width: 28px;
   height: 28px;
-  flex-shrink: 0;
   border-radius: 9999px;
   background: #e2e8f0;
   color: #475569;
@@ -266,20 +299,24 @@ async function onLogoChange(id: string, event: Event): Promise<void> {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 1.5rem;
 }
 
 .row-fields {
-  flex: 1;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .field {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.field.full {
+  grid-column: 1 / -1;
 }
 
 label {
@@ -288,7 +325,7 @@ label {
   color: #475569;
 }
 
-.optional {
+.hint {
   font-weight: 400;
   color: #94a3b8;
 }
@@ -312,16 +349,67 @@ label {
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
-.text-input.is-valid {
-  border-color: #10b981;
+.images-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
 }
 
-.text-input.is-invalid {
-  border-color: #ef4444;
+.img-thumb {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+}
+
+.img-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.img-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  border: none;
+  background: rgba(15, 23, 42, 0.7);
+  color: #fff;
+  font-size: 0.7rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.img-add {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  border: 1.5px dashed #c7d2fe;
+  background: #f5f7ff;
+  color: #6366f1;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.img-add:hover {
+  background: #eef2ff;
+  border-color: #6366f1;
 }
 
 .logo-field {
-  grid-column: 1 / -1;
+  margin-bottom: 0;
 }
 
 .logo-control {
@@ -382,7 +470,6 @@ label {
   cursor: pointer;
   font-size: 1.1rem;
   padding: 0.35rem;
-  margin-top: 1.4rem;
   opacity: 0.6;
   transition: opacity 0.2s;
 }

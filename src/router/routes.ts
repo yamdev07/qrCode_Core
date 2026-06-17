@@ -14,6 +14,12 @@ export const routes: RouteRecordRaw[] = [
     meta: { title: 'Générer un QR code' }
   },
   {
+    path: '/cards',
+    name: 'cards',
+    component: () => import('@/views/CardsView.vue'),
+    meta: { title: 'Cartes QR en lot' }
+  },
+  {
     path: '/scan',
     name: 'scan',
     component: () => import('@/views/ScanView.vue'),

@@ -9,6 +9,7 @@ const isMobileMenuOpen = ref(false)
 const navItems = [
   { path: '/', label: '🏠 Accueil', icon: '🏠' },
   { path: '/generate', label: 'Générer', icon: '✨' },
+  { path: '/cards', label: 'Cartes', icon: '🎴' },
   { path: '/scan', label: 'Scanner', icon: '📷' },
   { path: '/sessions', label: 'Sessions', icon: '📋' }
 ]

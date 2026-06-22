@@ -14,6 +14,18 @@ export const routes: RouteRecordRaw[] = [
     meta: { title: 'Générer un QR code' }
   },
   {
+    path: '/cards',
+    name: 'cards',
+    component: () => import('@/views/CardsView.vue'),
+    meta: { title: 'Cartes QR en lot' }
+  },
+  {
+    path: '/carte/:id',
+    name: 'card-view',
+    component: () => import('@/views/CardViewerView.vue'),
+    meta: { title: 'Carte' }
+  },
+  {
     path: '/scan',
     name: 'scan',
     component: () => import('@/views/ScanView.vue'),
@@ -36,6 +48,18 @@ export const routes: RouteRecordRaw[] = [
     name: 'session-detail',
     component: () => import('@/views/SessionDetailView.vue'),
     meta: { title: 'Détail session' }
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('@/views/LoginView.vue'),
+    meta: { title: 'Connexion' }
+  },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: () => import('@/views/AdminView.vue'),
+    meta: { title: 'Administration', requiresAuth: true }
   },
   {
     path: '/:pathMatch(.*)*',

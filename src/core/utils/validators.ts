@@ -15,6 +15,12 @@ export const qrOptionsSchema = z.object({
   margin: z.number().min(0).max(20).default(4)
 })
 
+export const personCardSchema = z.object({
+  nom: z.string().min(1, 'Le nom est requis').max(120, 'Le nom est trop long'),
+  prenoms: z.string().max(120, 'Le prénom est trop long').optional().default(''),
+  poste: z.string().max(160, 'Le poste est trop long').optional().default('')
+})
+
 export const sessionSchema = z.object({
   nom: z.string().min(1, 'Le nom est requis').max(255),
   code_unique: z.string().min(3).max(50).optional(),
@@ -29,5 +35,6 @@ export const presenceSchema = z.object({
 
 export type URlValidation = z.infer<typeof urlSchema>
 export type QROptionsValidation = z.infer<typeof qrOptionsSchema>
+export type PersonCardValidation = z.infer<typeof personCardSchema>
 export type SessionValidation = z.infer<typeof sessionSchema>
 export type PresenceValidation = z.infer<typeof presenceSchema>

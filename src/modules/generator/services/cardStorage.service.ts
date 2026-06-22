@@ -98,6 +98,31 @@ export async function uploadCard(person: PersonCard): Promise<string> {
 }
 
 /**
+ * Téléverse le PNG du QR (avec logo) dans `cartes/{cardId}/qr.png` et
+ * retourne son chemin de stockage (pour re-téléchargement depuis l'admin).
+ */
+export async function uploadQr(cardId: string, qrDataUrl: string): Promise<string> {
+  const path = `${cardId}/qr.png`
+  const blob = await dataUrlToBlob(qrDataUrl)
+  const { error } = await supabase.storage
+    .from(CARDS_BUCKET)
+    .upload(path, blob, { contentType: 'image/png', upsert: true })
+
+  if (error) {
+    log.error(`Échec upload QR ${path}`, error)
+    throw new ApiError('Échec du téléversement du QR', 500, {
+      storageError: error.message
+    })
+  }
+  return path
+}
+
+/** URL publique d'un fichier du bucket (ex: le QR stocké). */
+export function getPublicUrl(path: string): string {
+  return supabase.storage.from(CARDS_BUCKET).getPublicUrl(path).data.publicUrl
+}
+
+/**
  * Charge les données d'une carte pour la page d'affichage `/carte/:id` :
  * lit meta.json puis résout les URLs publiques des images.
  */

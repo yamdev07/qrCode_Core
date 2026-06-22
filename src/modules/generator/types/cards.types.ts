@@ -60,3 +60,18 @@ export type CardViewData = {
   meta: CardMeta
   imageUrls: string[]
 }
+
+/** Ligne de la table `cards` (suivi & administration). */
+export type CardRecord = {
+  id: string
+  nom: string
+  prenoms: string
+  poste: string
+  /** Chemin du PNG du QR dans le bucket (pour re-téléchargement). */
+  qr_path: string | null
+  /** URL de la page d'affichage encodée dans le QR. */
+  view_url: string | null
+  /** Nombre total de scans (incrémenté à chaque ouverture de /carte/:id). */
+  scan_count: number
+  created_at: string
+}

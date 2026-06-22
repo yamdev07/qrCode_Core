@@ -7,6 +7,7 @@ const {
   design,
   isGenerating,
   errorMessage,
+  ocrBusy,
   readyCount,
   addPerson,
   removePerson,
@@ -14,6 +15,7 @@ const {
   setLogoFromFile,
   addImages,
   removeImage,
+  readCardFromFile,
   generate,
   reset
 } = useQrCards()
@@ -46,6 +48,20 @@ async function onImagesChange(id: string, event: Event): Promise<void> {
     input.value = ''
   }
 }
+
+async function onOcrChange(id: string, event: Event): Promise<void> {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  fieldError.value = null
+  try {
+    await readCardFromFile(id, file)
+  } catch (e) {
+    fieldError.value = e instanceof Error ? e.message : 'Lecture OCR impossible'
+  } finally {
+    input.value = ''
+  }
+}
 </script>
 
 <template>
@@ -69,6 +85,20 @@ async function onImagesChange(id: string, event: Event): Promise<void> {
             🗑
           </button>
         </div>
+
+        <!-- Remplissage auto par OCR d'une image de carte -->
+        <label class="ocr-bar" :class="{ busy: ocrBusy[person.id] }">
+          <span v-if="ocrBusy[person.id]" class="spinner-sm"></span>
+          <span class="ocr-icon" v-else>📷</span>
+          <span>{{ ocrBusy[person.id] ? 'Lecture de la carte…' : 'Lire une image de carte (remplit Nom/Prénoms/Poste)' }}</span>
+          <input
+            type="file"
+            accept="image/*"
+            hidden
+            :disabled="ocrBusy[person.id]"
+            @change="(e) => onOcrChange(person.id, e)"
+          />
+        </label>
 
         <div class="row-fields">
           <div class="field">
@@ -299,6 +329,45 @@ async function onImagesChange(id: string, event: Event): Promise<void> {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.ocr-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.85rem;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+  border: 1.5px dashed #c7d2fe;
+  background: #f5f7ff;
+  color: #4f46e5;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ocr-bar:hover {
+  background: #eef2ff;
+  border-color: #6366f1;
+}
+
+.ocr-bar.busy {
+  cursor: progress;
+  opacity: 0.8;
+}
+
+.ocr-icon {
+  font-size: 1rem;
+}
+
+.spinner-sm {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(99, 102, 241, 0.25);
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
 
 .row-fields {

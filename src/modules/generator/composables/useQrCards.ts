@@ -5,6 +5,7 @@ import {
   DEFAULT_CARD_DESIGN
 } from '@modules/generator/services/qrCard.service'
 import { uploadCard } from '@modules/generator/services/cardStorage.service'
+import { extractCardFields } from '@modules/generator/services/cardOcr.service'
 import { downloadQRCode } from '@modules/generator/services/qrGenerator.service'
 import { handleError } from '@core/errors/errorHandler'
 import { personCardSchema } from '@core/utils/validators'
@@ -43,6 +44,8 @@ const design = reactive<CardDesignOptions>({ ...DEFAULT_CARD_DESIGN })
 const generated = ref<GeneratedCard[]>([])
 const isGenerating = ref(false)
 const errorMessage = ref<string | null>(null)
+// Personnes dont l'OCR est en cours (clé = id de la personne).
+const ocrBusy = reactive<Record<string, boolean>>({})
 
 /** Une personne est prête si nom valide + au moins une image. */
 function isPersonReady(p: PersonCard): boolean {
@@ -94,6 +97,31 @@ export function useQrCards() {
     if (!person) return
     const idx = person.images.findIndex((img) => img.id === imageId)
     if (idx !== -1) person.images.splice(idx, 1)
+  }
+
+  /**
+   * Lit une image de carte par OCR et remplit Nom/Prénoms/Poste.
+   * Ne remplace un champ que si l'OCR a trouvé une valeur.
+   */
+  async function readCardFromFile(personId: string, file: File): Promise<void> {
+    const person = people.find((p) => p.id === personId)
+    if (!person) return
+    if (!file.type.startsWith('image/')) {
+      throw new Error("Le fichier doit être une image de carte")
+    }
+    const dataUrl = await readFileAsDataUrl(file)
+    ocrBusy[personId] = true
+    try {
+      const fields = await extractCardFields(dataUrl)
+      if (fields.nom) person.nom = fields.nom
+      if (fields.prenoms) person.prenoms = fields.prenoms
+      if (fields.poste) person.poste = fields.poste
+      if (!fields.nom && !fields.prenoms && !fields.poste) {
+        throw new Error('Aucun champ détecté sur la carte. Vérifiez la netteté.')
+      }
+    } finally {
+      ocrBusy[personId] = false
+    }
   }
 
   /**
@@ -166,6 +194,7 @@ export function useQrCards() {
     generated,
     isGenerating,
     errorMessage,
+    ocrBusy,
     readyCount,
     isPersonReady,
     addPerson,
@@ -174,6 +203,7 @@ export function useQrCards() {
     setLogoFromFile,
     addImages,
     removeImage,
+    readCardFromFile,
     generate,
     downloadCard,
     downloadAll,

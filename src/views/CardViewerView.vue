@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { getCardData } from '@modules/generator/services/cardStorage.service'
+import { incrementCardScan } from '@modules/admin/services/cardAdmin.service'
 import { handleError } from '@core/errors/errorHandler'
 import type { CardViewData } from '@modules/generator/types/cards.types'
 
@@ -12,6 +13,8 @@ const errorMessage = ref<string | null>(null)
 
 onMounted(async () => {
   const id = String(route.params.id)
+  // Comptabilise le scan (non bloquant : n'empêche pas l'affichage).
+  void incrementCardScan(id)
   try {
     data.value = await getCardData(id)
   } catch (error) {

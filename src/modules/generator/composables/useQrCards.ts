@@ -4,7 +4,8 @@ import {
   slugify,
   DEFAULT_CARD_DESIGN
 } from '@modules/generator/services/qrCard.service'
-import { uploadCard } from '@modules/generator/services/cardStorage.service'
+import { uploadCard, uploadQr } from '@modules/generator/services/cardStorage.service'
+import { insertCardRecord } from '@modules/admin/services/cardAdmin.service'
 import { extractCardFields } from '@modules/generator/services/cardOcr.service'
 import { downloadQRCode } from '@modules/generator/services/qrGenerator.service'
 import { handleError } from '@core/errors/errorHandler'
@@ -159,6 +160,15 @@ export function useQrCards() {
     try {
       const viewUrl = await uploadCard(person)
       const qr = await generateQRCodeWithLogo(viewUrl, { ...design }, person.logo)
+      const qrPath = await uploadQr(person.id, qr)
+      await insertCardRecord({
+        id: person.id,
+        nom: person.nom,
+        prenoms: person.prenoms,
+        poste: person.poste,
+        qr_path: qrPath,
+        view_url: viewUrl
+      })
       log.qrGenerated(viewUrl, design.size)
       return { ...base, viewUrl, qr, error: null }
     } catch (error) {

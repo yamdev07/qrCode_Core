@@ -12,9 +12,17 @@ vi.mock('@core/logger/logger', () => ({
 // On évite tout appel réseau Supabase : l'upload retourne une fausse URL.
 vi.mock('@modules/generator/services/cardStorage.service', () => ({
   uploadCard: vi.fn(async (person: { id: string }) => `https://app.test/carte/${person.id}`),
+  uploadQr: vi.fn(async (id: string) => `${id}/qr.png`),
   buildCardViewUrl: (id: string) => `https://app.test/carte/${id}`,
+  getPublicUrl: (path: string) => `https://app.test/${path}`,
   getCardData: vi.fn(),
   CARDS_BUCKET: 'cartes'
+}))
+
+vi.mock('@modules/admin/services/cardAdmin.service', () => ({
+  insertCardRecord: vi.fn(async () => undefined),
+  incrementCardScan: vi.fn(async () => undefined),
+  listCards: vi.fn(async () => [])
 }))
 
 const PNG = 'data:image/png;base64,AAAA'

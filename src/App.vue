@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import DefaultLayout from '@shared/layouts/DefaultLayout.vue'
 import ErrorBoundary from '@shared/components/ErrorBoundary.vue'
+import { useAuth } from '@modules/admin/composables/useAuth'
+
+// Charge la session admin au démarrage (suivi de l'état de connexion).
+useAuth().init()
 </script>
 
 <template>

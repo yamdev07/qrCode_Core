@@ -50,6 +50,12 @@ export const routes: RouteRecordRaw[] = [
     meta: { title: 'Détail session' }
   },
   {
+    path: '/login',
+    name: 'login',
+    component: () => import('@/views/LoginView.vue'),
+    meta: { title: 'Connexion' }
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: () => import('@/views/NotFoundView.vue'),

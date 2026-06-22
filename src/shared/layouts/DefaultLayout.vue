@@ -1,17 +1,28 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAuth } from '@modules/admin/composables/useAuth'
 
 const route = useRoute()
+const { isAuthenticated } = useAuth()
 const isSidebarOpen = ref(false)
 
-const navItems = [
+const baseNav = [
   { path: '/', label: 'Accueil', icon: '🏠', desc: 'Tableau de bord' },
   { path: '/generate', label: 'Générer', icon: '✨', desc: 'QR à partir d’un lien' },
   { path: '/cards', label: 'Cartes', icon: '🎴', desc: 'Cartes pro & lots' },
   { path: '/scan', label: 'Scanner', icon: '📷', desc: 'Lire un QR code' },
   { path: '/sessions', label: 'Sessions', icon: '📋', desc: 'Présences' }
 ]
+
+const navItems = computed(() =>
+  isAuthenticated.value
+    ? [
+        ...baseNav,
+        { path: '/admin', label: 'Admin', icon: '📊', desc: 'Suivi des cartes' }
+      ]
+    : baseNav
+)
 
 const pageTitle = computed(
   () => (route.meta.title as string) || 'QR Pro'

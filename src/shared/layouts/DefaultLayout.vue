@@ -41,8 +41,15 @@ function closeSidebar(): void {
 <template>
   <div class="app-shell">
     <!-- Sidebar -->
-    <aside class="sidebar" :class="{ open: isSidebarOpen }">
-      <router-link to="/" class="brand" @click="closeSidebar">
+    <aside
+      class="sidebar"
+      :class="{ open: isSidebarOpen }"
+    >
+      <router-link
+        to="/"
+        class="brand"
+        @click="closeSidebar"
+      >
         <span class="brand-mark">▣</span>
         <span class="brand-text">
           <span class="brand-name">QR Pro</span>
@@ -51,7 +58,9 @@ function closeSidebar(): void {
       </router-link>
 
       <nav class="nav">
-        <p class="nav-label">Menu</p>
+        <p class="nav-label">
+          Menu
+        </p>
         <router-link
           v-for="item in navItems"
           :key="item.path"
@@ -65,7 +74,7 @@ function closeSidebar(): void {
             <span class="nav-title">{{ item.label }}</span>
             <span class="nav-desc">{{ item.desc }}</span>
           </span>
-          <span class="nav-dot"></span>
+          <span class="nav-dot" />
         </router-link>
       </nav>
 
@@ -85,7 +94,7 @@ function closeSidebar(): void {
       v-if="isSidebarOpen"
       class="overlay"
       @click="closeSidebar"
-    ></div>
+    />
 
     <!-- Zone principale -->
     <div class="main-area">
@@ -95,7 +104,7 @@ function closeSidebar(): void {
           aria-label="Menu"
           @click="isSidebarOpen = !isSidebarOpen"
         >
-          <span></span><span></span><span></span>
+          <span /><span /><span />
         </button>
         <div class="topbar-title">
           <span class="crumb">QR Pro</span>

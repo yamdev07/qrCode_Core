@@ -28,13 +28,24 @@ onMounted(async () => {
 
 <template>
   <div class="detail-view">
-    <button class="btn-back" @click="router.push('/sessions')">
+    <button
+      class="btn-back"
+      @click="router.push('/sessions')"
+    >
       ← Retour
     </button>
 
-    <div v-if="isLoading" class="loading">Chargement...</div>
+    <div
+      v-if="isLoading"
+      class="loading"
+    >
+      Chargement...
+    </div>
 
-    <div v-else-if="currentSession" class="detail-content">
+    <div
+      v-else-if="currentSession"
+      class="detail-content"
+    >
       <div class="session-header">
         <h2>{{ currentSession.nom }}</h2>
         <div class="session-meta">
@@ -66,7 +77,12 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div v-else class="not-found">Session introuvable</div>
+    <div
+      v-else
+      class="not-found"
+    >
+      Session introuvable
+    </div>
   </div>
 </template>
 

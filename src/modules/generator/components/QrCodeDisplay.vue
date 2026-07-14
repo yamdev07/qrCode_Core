@@ -20,7 +20,11 @@ const { download } = useQrGenerator()
     <!-- QR Code Preview Frame -->
     <div class="qr-preview-container">
       <div class="qr-frame">
-        <img :src="qrData" alt="QR Code" class="qr-image" />
+        <img
+          :src="qrData"
+          alt="QR Code"
+          class="qr-image"
+        >
       </div>
     </div>
 
@@ -38,7 +42,10 @@ const { download } = useQrGenerator()
 
     <!-- Actions -->
     <div class="display-actions">
-      <button @click="() => download()" class="btn btn-download">
+      <button
+        class="btn btn-download"
+        @click="() => download()"
+      >
         <span class="btn-icon">💾</span>
         <span>Télécharger</span>
       </button>

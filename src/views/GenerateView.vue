@@ -19,7 +19,9 @@ function handleHistorySelect(url: string): void {
 
 <template>
   <div class="generate-view">
-    <h2 class="view-title">✨ Générer un QR code</h2>
+    <h2 class="view-title">
+      ✨ Générer un QR code
+    </h2>
 
     <QrGeneratorForm @generated="handleGenerated" />
 

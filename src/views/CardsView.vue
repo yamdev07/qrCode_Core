@@ -5,7 +5,9 @@ import GeneratedCardsList from '@modules/generator/components/GeneratedCardsList
 
 <template>
   <div class="cards-view">
-    <h2 class="view-title">🎴 Cartes professionnelles (QR + images)</h2>
+    <h2 class="view-title">
+      🎴 Cartes professionnelles (QR + images)
+    </h2>
     <p class="view-subtitle">
       Saisissez Nom, Prénoms et Poste, ajoutez les images à afficher et un logo
       par personne. À la validation, les images sont hébergées et chaque QR

@@ -9,18 +9,26 @@ const successCount = computed(() => generated.value.filter((c) => c.qr).length)
 </script>
 
 <template>
-  <div v-if="hasResults" class="results-card">
+  <div
+    v-if="hasResults"
+    class="results-card"
+  >
     <div class="results-header">
       <div>
         <span class="icon">🎴</span>
         <h3>QR générés</h3>
       </div>
-      <button class="btn-download-all" @click="downloadAll">
+      <button
+        class="btn-download-all"
+        @click="downloadAll"
+      >
         💾 Tout télécharger
       </button>
     </div>
 
-    <p class="results-meta">{{ successCount }} / {{ generated.length }} généré(s)</p>
+    <p class="results-meta">
+      {{ successCount }} / {{ generated.length }} généré(s)
+    </p>
 
     <div class="cards-grid">
       <div
@@ -32,13 +40,26 @@ const successCount = computed(() => generated.value.filter((c) => c.qr).length)
         <div class="card-name">
           {{ card.nom }} <span v-if="card.prenoms">{{ card.prenoms }}</span>
         </div>
-        <div v-if="card.poste" class="card-poste">{{ card.poste }}</div>
+        <div
+          v-if="card.poste"
+          class="card-poste"
+        >
+          {{ card.poste }}
+        </div>
 
-        <p v-if="card.error" class="card-error">⚠️ {{ card.error }}</p>
+        <p
+          v-if="card.error"
+          class="card-error"
+        >
+          ⚠️ {{ card.error }}
+        </p>
 
         <template v-else-if="card.qr">
           <div class="qr-frame">
-            <img :src="card.qr" :alt="`QR ${card.nom}`" />
+            <img
+              :src="card.qr"
+              :alt="`QR ${card.nom}`"
+            >
           </div>
           <a
             v-if="card.viewUrl"
@@ -50,7 +71,10 @@ const successCount = computed(() => generated.value.filter((c) => c.qr).length)
           >
             🔗 Voir la page
           </a>
-          <button class="btn-side" @click="downloadCard(card)">
+          <button
+            class="btn-side"
+            @click="downloadCard(card)"
+          >
             💾 Télécharger le QR
           </button>
         </template>

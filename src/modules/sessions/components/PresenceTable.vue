@@ -30,13 +30,24 @@ function formatUserId(id: string): string {
 
 <template>
   <div class="presence-table-container">
-    <div v-if="isLoading" class="loading-text">Chargement...</div>
+    <div
+      v-if="isLoading"
+      class="loading-text"
+    >
+      Chargement...
+    </div>
 
-    <div v-else-if="presences.length === 0" class="empty-presences">
+    <div
+      v-else-if="presences.length === 0"
+      class="empty-presences"
+    >
       Aucune présence enregistrée
     </div>
 
-    <div v-else class="table-wrapper">
+    <div
+      v-else
+      class="table-wrapper"
+    >
       <table class="presence-table">
         <thead>
           <tr>
@@ -46,7 +57,10 @@ function formatUserId(id: string): string {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="presence in sortedPresences" :key="presence.id">
+          <tr
+            v-for="presence in sortedPresences"
+            :key="presence.id"
+          >
             <td>
               <code class="user-id">{{ formatUserId(presence.utilisateur_id) }}</code>
             </td>

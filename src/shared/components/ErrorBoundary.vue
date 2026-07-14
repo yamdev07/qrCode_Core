@@ -33,13 +33,21 @@ function retry(): void {
 </script>
 
 <template>
-  <div v-if="hasError" class="error-boundary">
+  <div
+    v-if="hasError"
+    class="error-boundary"
+  >
     <div class="error-content">
       <span class="error-icon">⚠️</span>
       <h2>Quelque chose s'est mal passé</h2>
-      <p class="error-message">{{ errorMessage }}</p>
+      <p class="error-message">
+        {{ errorMessage }}
+      </p>
       <code class="error-code">{{ errorCode }}</code>
-      <button class="btn-retry" @click="retry">
+      <button
+        class="btn-retry"
+        @click="retry"
+      >
         🔄 Réessayer
       </button>
     </div>

@@ -27,16 +27,29 @@ function formatDate(dateStr: string): string {
 
 <template>
   <div class="session-list-container">
-    <div v-if="isLoading" class="loading-state">
-      <div class="skeleton" v-for="i in 3" :key="i"></div>
+    <div
+      v-if="isLoading"
+      class="loading-state"
+    >
+      <div
+        v-for="i in 3"
+        :key="i"
+        class="skeleton"
+      />
     </div>
 
-    <div v-else-if="sessions.length === 0" class="empty-state">
+    <div
+      v-else-if="sessions.length === 0"
+      class="empty-state"
+    >
       <span class="empty-icon">📭</span>
       <p>{{ emptyMessage || 'Aucune session trouvée' }}</p>
     </div>
 
-    <ul v-else class="session-list">
+    <ul
+      v-else
+      class="session-list"
+    >
       <li
         v-for="session in sessions"
         :key="session.id"
@@ -44,7 +57,9 @@ function formatDate(dateStr: string): string {
         @click="$emit('select', session)"
       >
         <div class="session-info">
-          <h4 class="session-name">{{ session.nom }}</h4>
+          <h4 class="session-name">
+            {{ session.nom }}
+          </h4>
           <div class="session-meta">
             <span class="session-date">📅 {{ formatDate(session.date) }}</span>
             <span class="session-code">🔑 {{ session.code_unique }}</span>
@@ -57,7 +72,10 @@ function formatDate(dateStr: string): string {
           </span>
         </div>
 
-        <div class="session-actions" @click.stop>
+        <div
+          class="session-actions"
+          @click.stop
+        >
           <button
             class="btn-icon"
             title="Modifier"

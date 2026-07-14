@@ -49,7 +49,10 @@ function generateCode(): void {
 </script>
 
 <template>
-  <form @submit.prevent="handleSubmit" class="session-form">
+  <form
+    class="session-form"
+    @submit.prevent="handleSubmit"
+  >
     <div class="form-group">
       <label for="session-nom">Nom de la session *</label>
       <input
@@ -59,14 +62,23 @@ function generateCode(): void {
         placeholder="Ex: Cours du matin"
         class="input"
         :class="{ 'input-error': errors.nom }"
-      />
-      <p v-if="errors.nom" class="error-text">{{ errors.nom }}</p>
+      >
+      <p
+        v-if="errors.nom"
+        class="error-text"
+      >
+        {{ errors.nom }}
+      </p>
     </div>
 
     <div class="form-group">
       <label for="session-code">
         Code unique
-        <button type="button" class="btn-generate" @click="generateCode">🎲 Générer</button>
+        <button
+          type="button"
+          class="btn-generate"
+          @click="generateCode"
+        >🎲 Générer</button>
       </label>
       <input
         id="session-code"
@@ -75,7 +87,7 @@ function generateCode(): void {
         placeholder="Code auto-généré si vide"
         class="input code-input"
         maxlength="50"
-      />
+      >
     </div>
 
     <div class="form-group">
@@ -86,8 +98,13 @@ function generateCode(): void {
         type="datetime-local"
         class="input"
         :class="{ 'input-error': errors.date }"
-      />
-      <p v-if="errors.date" class="error-text">{{ errors.date }}</p>
+      >
+      <p
+        v-if="errors.date"
+        class="error-text"
+      >
+        {{ errors.date }}
+      </p>
     </div>
 
     <div class="form-actions">
@@ -96,10 +113,17 @@ function generateCode(): void {
         class="btn btn-submit"
         :disabled="isLoading"
       >
-        <span v-if="isLoading" class="spinner"></span>
+        <span
+          v-if="isLoading"
+          class="spinner"
+        />
         <span v-else>{{ isEditing ? '✏️ Modifier' : '✅ Créer la session' }}</span>
       </button>
-      <button type="button" class="btn btn-cancel" @click="$emit('cancel')">
+      <button
+        type="button"
+        class="btn btn-cancel"
+        @click="$emit('cancel')"
+      >
         Annuler
       </button>
     </div>

@@ -42,8 +42,13 @@ async function handleDelete(session: SessionWithPresenceCount): Promise<void> {
 <template>
   <div class="sessions-view">
     <div class="view-header">
-      <h2 class="view-title">📋 Sessions</h2>
-      <button class="btn-add" @click="showForm = !showForm">
+      <h2 class="view-title">
+        📋 Sessions
+      </h2>
+      <button
+        class="btn-add"
+        @click="showForm = !showForm"
+      >
         {{ showForm ? '✕ Annuler' : '+ Nouvelle session' }}
       </button>
     </div>
@@ -54,8 +59,13 @@ async function handleDelete(session: SessionWithPresenceCount): Promise<void> {
       @cancel="showForm = false"
     />
 
-    <div v-if="activeSessions.length > 0" class="section">
-      <h3 class="section-title">🟢 Sessions actives</h3>
+    <div
+      v-if="activeSessions.length > 0"
+      class="section"
+    >
+      <h3 class="section-title">
+        🟢 Sessions actives
+      </h3>
       <SessionList
         :sessions="activeSessions"
         :is-loading="isLoading"
@@ -65,8 +75,13 @@ async function handleDelete(session: SessionWithPresenceCount): Promise<void> {
       />
     </div>
 
-    <div v-if="pastSessions.length > 0" class="section">
-      <h3 class="section-title">📅 Sessions passées</h3>
+    <div
+      v-if="pastSessions.length > 0"
+      class="section"
+    >
+      <h3 class="section-title">
+        📅 Sessions passées
+      </h3>
       <SessionList
         :sessions="pastSessions"
         :is-loading="isLoading"
@@ -75,7 +90,10 @@ async function handleDelete(session: SessionWithPresenceCount): Promise<void> {
       />
     </div>
 
-    <div v-if="error" class="error-banner">
+    <div
+      v-if="error"
+      class="error-banner"
+    >
       ⚠️ {{ error }}
     </div>
   </div>

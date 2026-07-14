@@ -45,48 +45,63 @@ function formatDate(dateStr: string): string {
       </div>
       <button
         v-if="recentItems.length > 0"
-        @click="clearHistory"
         class="btn-clear"
         title="Vider l'historique"
+        @click="clearHistory"
       >
         Tout effacer
       </button>
     </div>
 
     <!-- Empty State -->
-    <div v-if="recentItems.length === 0" class="empty-state">
+    <div
+      v-if="recentItems.length === 0"
+      class="empty-state"
+    >
       <span class="empty-icon">📭</span>
       <p>Aucun code QR généré récemment</p>
     </div>
 
     <!-- History List -->
-    <div v-else class="history-list">
+    <div
+      v-else
+      class="history-list"
+    >
       <div
         v-for="item in recentItems"
         :key="item.id"
         class="history-item"
       >
-        <div class="item-details" @click="handleSelect(item.url)">
+        <div
+          class="item-details"
+          @click="handleSelect(item.url)"
+        >
           <div class="item-meta">
-            <span class="format-badge" :class="item.format">{{ item.format.toUpperCase() }}</span>
+            <span
+              class="format-badge"
+              :class="item.format"
+            >{{ item.format.toUpperCase() }}</span>
             <span class="date">{{ formatDate(item.createdAt) }}</span>
           </div>
-          <span class="url" :title="item.url">{{ item.url }}</span>
+          <span
+            class="url"
+            :title="item.url"
+          >{{ item.url }}</span>
         </div>
 
         <div class="item-actions">
           <button
-            @click="copyToClipboard(item.id, item.url)"
             class="action-btn btn-copy"
             :class="{ copied: copiedId === item.id }"
             :title="copiedId === item.id ? 'Copié !' : 'Copier l\'URL'"
+            @click="copyToClipboard(item.id, item.url)"
           >
             {{ copiedId === item.id ? '✓' : '📋' }}
           </button>
           <button
-            @click="removeFromHistory(item.id)"
             class="action-btn btn-delete"
             title="Supprimer"
+            @click="removeFromHistory(item.id)"
           >
             🗑️
           </button>

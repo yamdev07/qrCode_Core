@@ -60,7 +60,10 @@ async function toggleScan(): Promise<void> {
 
 <template>
   <div class="scanner-container">
-    <div class="camera-wrapper" :class="{ active: isScanning }">
+    <div
+      class="camera-wrapper"
+      :class="{ active: isScanning }"
+    >
       <video
         ref="videoElement"
         class="camera-video"
@@ -68,27 +71,45 @@ async function toggleScan(): Promise<void> {
         autoplay
         muted
       />
-      <canvas ref="canvasElement" class="scanner-canvas" />
+      <canvas
+        ref="canvasElement"
+        class="scanner-canvas"
+      />
 
-      <div v-if="isScanning" class="scan-overlay">
-        <div class="scan-region"></div>
+      <div
+        v-if="isScanning"
+        class="scan-overlay"
+      >
+        <div class="scan-region" />
       </div>
 
-      <div v-if="!isScanning" class="camera-placeholder">
+      <div
+        v-if="!isScanning"
+        class="camera-placeholder"
+      >
         <span class="placeholder-icon">📷</span>
         <p>Caméra inactive</p>
       </div>
     </div>
 
-    <div v-if="isScanning" class="scan-info">
-      <span class="scan-indicator"></span>
+    <div
+      v-if="isScanning"
+      class="scan-info"
+    >
+      <span class="scan-indicator" />
       <span>Scan en cours... ({{ scanCount }} scanné{{ scanCount > 1 ? 's' : '' }})</span>
     </div>
 
-    <div v-if="cameraError" class="error-banner">
+    <div
+      v-if="cameraError"
+      class="error-banner"
+    >
       ⚠️ {{ cameraError }}
     </div>
-    <div v-if="scanError" class="error-banner">
+    <div
+      v-if="scanError"
+      class="error-banner"
+    >
       ⚠️ {{ scanError }}
     </div>
 
@@ -96,8 +117,8 @@ async function toggleScan(): Promise<void> {
       <button
         class="btn-scan"
         :class="{ scanning: isScanning }"
-        @click="toggleScan"
         :disabled="!scannerReady"
+        @click="toggleScan"
       >
         <span v-if="!isScanning">▶️ Démarrer le scan</span>
         <span v-else>⏹️ Arrêter le scan</span>
@@ -106,8 +127,8 @@ async function toggleScan(): Promise<void> {
       <button
         v-if="isScanning"
         class="btn-switch"
-        @click="switchCamera"
         title="Changer de caméra"
+        @click="switchCamera"
       >
         🔄
       </button>

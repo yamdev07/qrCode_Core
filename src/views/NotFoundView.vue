@@ -9,7 +9,10 @@ const router = useRouter()
     <span class="not-found-icon">🔍</span>
     <h1>404</h1>
     <p>Page introuvable</p>
-    <button class="btn-home" @click="router.push('/')">
+    <button
+      class="btn-home"
+      @click="router.push('/')"
+    >
       Retour à l'accueil
     </button>
   </div>

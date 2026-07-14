@@ -27,20 +27,34 @@ onMounted(async () => {
 
 <template>
   <div class="viewer">
-    <div v-if="isLoading" class="state">
-      <span class="spinner"></span>
+    <div
+      v-if="isLoading"
+      class="state"
+    >
+      <span class="spinner" />
       <p>Chargement…</p>
     </div>
 
-    <div v-else-if="errorMessage" class="state error">
+    <div
+      v-else-if="errorMessage"
+      class="state error"
+    >
       <span class="emoji">🚫</span>
       <p>{{ errorMessage }}</p>
     </div>
 
-    <div v-else-if="data" class="content">
+    <div
+      v-else-if="data"
+      class="content"
+    >
       <header class="identity">
         <h1>{{ data.meta.nom }} {{ data.meta.prenoms }}</h1>
-        <p v-if="data.meta.poste" class="poste">{{ data.meta.poste }}</p>
+        <p
+          v-if="data.meta.poste"
+          class="poste"
+        >
+          {{ data.meta.poste }}
+        </p>
       </header>
 
       <div class="gallery">
@@ -52,7 +66,11 @@ onMounted(async () => {
           rel="noopener"
           class="gallery-item"
         >
-          <img :src="url" :alt="`Image ${i + 1}`" loading="lazy" />
+          <img
+            :src="url"
+            :alt="`Image ${i + 1}`"
+            loading="lazy"
+          >
         </a>
       </div>
     </div>

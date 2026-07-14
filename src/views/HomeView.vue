@@ -31,7 +31,9 @@ const features = [
 <template>
   <div class="home">
     <div class="hero">
-      <h1 class="hero-title">QRCode Pro</h1>
+      <h1 class="hero-title">
+        QRCode Pro
+      </h1>
       <p class="hero-subtitle">
         Générez, scannez et gérez vos présences en toute simplicité
       </p>
@@ -46,8 +48,12 @@ const features = [
         @click="router.push(feature.route)"
       >
         <span class="feature-icon">{{ feature.icon }}</span>
-        <h3 class="feature-title">{{ feature.title }}</h3>
-        <p class="feature-description">{{ feature.description }}</p>
+        <h3 class="feature-title">
+          {{ feature.title }}
+        </h3>
+        <p class="feature-description">
+          {{ feature.description }}
+        </p>
       </div>
     </div>
   </div>

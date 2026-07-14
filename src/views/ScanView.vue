@@ -49,7 +49,9 @@ function handleCancel(): void {
 
 <template>
   <div class="scan-view">
-    <h2 class="view-title">📷 Scanner un QR code</h2>
+    <h2 class="view-title">
+      📷 Scanner un QR code
+    </h2>
 
     <QrScannerCamera
       @scanned="handleScanned"

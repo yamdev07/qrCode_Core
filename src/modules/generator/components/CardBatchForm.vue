@@ -73,9 +73,15 @@ async function onOcrChange(id: string, event: Event): Promise<void> {
     </div>
 
     <div class="people-list">
-      <div v-for="(person, index) in people" :key="person.id" class="person-row">
+      <div
+        v-for="(person, index) in people"
+        :key="person.id"
+        class="person-row"
+      >
         <div class="row-top">
-          <div class="row-index">{{ index + 1 }}</div>
+          <div class="row-index">
+            {{ index + 1 }}
+          </div>
           <button
             type="button"
             class="btn-remove"
@@ -87,9 +93,18 @@ async function onOcrChange(id: string, event: Event): Promise<void> {
         </div>
 
         <!-- Remplissage auto par OCR d'une image de carte -->
-        <label class="ocr-bar" :class="{ busy: ocrBusy[person.id] }">
-          <span v-if="ocrBusy[person.id]" class="spinner-sm"></span>
-          <span class="ocr-icon" v-else>📷</span>
+        <label
+          class="ocr-bar"
+          :class="{ busy: ocrBusy[person.id] }"
+        >
+          <span
+            v-if="ocrBusy[person.id]"
+            class="spinner-sm"
+          />
+          <span
+            v-else
+            class="ocr-icon"
+          >📷</span>
           <span>{{ ocrBusy[person.id] ? 'Lecture de la carte…' : 'Lire une image de carte (remplit Nom/Prénoms/Poste)' }}</span>
           <input
             type="file"
@@ -97,7 +112,7 @@ async function onOcrChange(id: string, event: Event): Promise<void> {
             hidden
             :disabled="ocrBusy[person.id]"
             @change="(e) => onOcrChange(person.id, e)"
-          />
+          >
         </label>
 
         <div class="row-fields">
@@ -108,7 +123,7 @@ async function onOcrChange(id: string, event: Event): Promise<void> {
               type="text"
               placeholder="FASSINOU"
               class="text-input"
-            />
+            >
           </div>
           <div class="field">
             <label>Prénoms</label>
@@ -117,7 +132,7 @@ async function onOcrChange(id: string, event: Event): Promise<void> {
               type="text"
               placeholder="Diane"
               class="text-input"
-            />
+            >
           </div>
           <div class="field full">
             <label>Poste</label>
@@ -126,7 +141,7 @@ async function onOcrChange(id: string, event: Event): Promise<void> {
               type="text"
               placeholder="Juriste Collaboratrice"
               class="text-input"
-            />
+            >
           </div>
         </div>
 
@@ -137,8 +152,15 @@ async function onOcrChange(id: string, event: Event): Promise<void> {
             <span class="hint">— le QR pointera vers une page montrant ces images</span>
           </label>
           <div class="images-row">
-            <div v-for="img in person.images" :key="img.id" class="img-thumb">
-              <img :src="img.dataUrl" :alt="img.name" />
+            <div
+              v-for="img in person.images"
+              :key="img.id"
+              class="img-thumb"
+            >
+              <img
+                :src="img.dataUrl"
+                :alt="img.name"
+              >
               <button
                 type="button"
                 class="img-remove"
@@ -156,7 +178,7 @@ async function onOcrChange(id: string, event: Event): Promise<void> {
                 multiple
                 hidden
                 @change="(e) => onImagesChange(person.id, e)"
-              />
+              >
             </label>
           </div>
         </div>
@@ -165,8 +187,15 @@ async function onOcrChange(id: string, event: Event): Promise<void> {
         <div class="field logo-field">
           <label>Logo (au centre du QR)</label>
           <div class="logo-control">
-            <div class="logo-thumb" :class="{ empty: !person.logo }">
-              <img v-if="person.logo" :src="person.logo" alt="Logo" />
+            <div
+              class="logo-thumb"
+              :class="{ empty: !person.logo }"
+            >
+              <img
+                v-if="person.logo"
+                :src="person.logo"
+                alt="Logo"
+              >
               <span v-else>—</span>
             </div>
             <div class="logo-buttons">
@@ -177,7 +206,7 @@ async function onOcrChange(id: string, event: Event): Promise<void> {
                   accept="image/*"
                   hidden
                   @change="(e) => onLogoChange(person.id, e)"
-                />
+                >
               </label>
               <button
                 v-if="person.logo"
@@ -193,9 +222,18 @@ async function onOcrChange(id: string, event: Event): Promise<void> {
       </div>
     </div>
 
-    <p v-if="fieldError" class="field-error">⚠️ {{ fieldError }}</p>
+    <p
+      v-if="fieldError"
+      class="field-error"
+    >
+      ⚠️ {{ fieldError }}
+    </p>
 
-    <button type="button" class="btn btn-add" @click="addPerson">
+    <button
+      type="button"
+      class="btn btn-add"
+      @click="addPerson"
+    >
       + Ajouter une personne
     </button>
 
@@ -207,42 +245,90 @@ async function onOcrChange(id: string, event: Event): Promise<void> {
       <div class="settings-grid">
         <div class="field">
           <label>Taille (px)</label>
-          <select v-model.number="design.size" class="select-input">
-            <option :value="256">256</option>
-            <option :value="320">320</option>
-            <option :value="512">512</option>
-            <option :value="1024">1024</option>
+          <select
+            v-model.number="design.size"
+            class="select-input"
+          >
+            <option :value="256">
+              256
+            </option>
+            <option :value="320">
+              320
+            </option>
+            <option :value="512">
+              512
+            </option>
+            <option :value="1024">
+              1024
+            </option>
           </select>
         </div>
         <div class="field">
           <label>Taille du logo</label>
-          <select v-model.number="design.logoScale" class="select-input">
-            <option :value="0.16">Petit</option>
-            <option :value="0.22">Moyen</option>
-            <option :value="0.28">Grand</option>
+          <select
+            v-model.number="design.logoScale"
+            class="select-input"
+          >
+            <option :value="0.16">
+              Petit
+            </option>
+            <option :value="0.22">
+              Moyen
+            </option>
+            <option :value="0.28">
+              Grand
+            </option>
           </select>
         </div>
         <div class="field">
           <label>Couleur QR</label>
           <div class="color-picker-wrapper">
-            <input v-model="design.foreground" type="color" class="color-picker" />
-            <input v-model="design.foreground" type="text" class="color-text" maxlength="7" />
+            <input
+              v-model="design.foreground"
+              type="color"
+              class="color-picker"
+            >
+            <input
+              v-model="design.foreground"
+              type="text"
+              class="color-text"
+              maxlength="7"
+            >
           </div>
         </div>
         <div class="field">
           <label>Couleur Fond</label>
           <div class="color-picker-wrapper">
-            <input v-model="design.background" type="color" class="color-picker" />
-            <input v-model="design.background" type="text" class="color-text" maxlength="7" />
+            <input
+              v-model="design.background"
+              type="color"
+              class="color-picker"
+            >
+            <input
+              v-model="design.background"
+              type="text"
+              class="color-text"
+              maxlength="7"
+            >
           </div>
         </div>
       </div>
     </details>
 
-    <div v-if="errorMessage" class="error-banner">⚠️ {{ errorMessage }}</div>
+    <div
+      v-if="errorMessage"
+      class="error-banner"
+    >
+      ⚠️ {{ errorMessage }}
+    </div>
 
     <div class="form-actions">
-      <button type="button" class="btn btn-secondary" :disabled="isGenerating" @click="reset">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        :disabled="isGenerating"
+        @click="reset"
+      >
         Réinitialiser
       </button>
       <button
@@ -251,7 +337,10 @@ async function onOcrChange(id: string, event: Event): Promise<void> {
         :disabled="isGenerating || readyCount === 0"
         @click="generate"
       >
-        <span v-if="isGenerating" class="spinner"></span>
+        <span
+          v-if="isGenerating"
+          class="spinner"
+        />
         <span>{{ isGenerating ? 'Téléversement…' : `Générer ${readyCount} QR` }}</span>
       </button>
     </div>

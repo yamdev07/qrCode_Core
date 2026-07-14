@@ -29,13 +29,30 @@ async function logout(): Promise<void> {
   <div class="admin">
     <header class="admin-head">
       <div>
-        <h2 class="title">📊 Tableau d'administration</h2>
-        <p class="sub">Suivi des cartes générées et de leurs scans</p>
+        <h2 class="title">
+          📊 Tableau d'administration
+        </h2>
+        <p class="sub">
+          Suivi des cartes générées et de leurs scans
+        </p>
       </div>
       <div class="head-actions">
-        <span v-if="userEmail" class="who">{{ userEmail }}</span>
-        <button class="btn-ghost" @click="load">↻ Actualiser</button>
-        <button class="btn-ghost danger" @click="logout">Déconnexion</button>
+        <span
+          v-if="userEmail"
+          class="who"
+        >{{ userEmail }}</span>
+        <button
+          class="btn-ghost"
+          @click="load"
+        >
+          ↻ Actualiser
+        </button>
+        <button
+          class="btn-ghost danger"
+          @click="logout"
+        >
+          Déconnexion
+        </button>
       </div>
     </header>
 
@@ -50,35 +67,63 @@ async function logout(): Promise<void> {
       </div>
     </div>
 
-    <div v-if="errorMessage" class="error-banner">⚠️ {{ errorMessage }}</div>
-
-    <div v-if="isLoading" class="state">
-      <span class="spinner"></span> Chargement…
+    <div
+      v-if="errorMessage"
+      class="error-banner"
+    >
+      ⚠️ {{ errorMessage }}
     </div>
 
-    <div v-else-if="cards.length === 0 && !errorMessage" class="state empty">
+    <div
+      v-if="isLoading"
+      class="state"
+    >
+      <span class="spinner" /> Chargement…
+    </div>
+
+    <div
+      v-else-if="cards.length === 0 && !errorMessage"
+      class="state empty"
+    >
       Aucune carte enregistrée pour l'instant.
     </div>
 
-    <div v-else class="table-wrap">
+    <div
+      v-else
+      class="table-wrap"
+    >
       <table class="table">
         <thead>
           <tr>
             <th>Nom</th>
             <th>Poste</th>
             <th>Créée le</th>
-            <th class="num">Scans</th>
-            <th class="actions">Actions</th>
+            <th class="num">
+              Scans
+            </th>
+            <th class="actions">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="card in cards" :key="card.id">
+          <tr
+            v-for="card in cards"
+            :key="card.id"
+          >
             <td>
               <strong>{{ card.nom }}</strong>
-              <span v-if="card.prenoms" class="prenoms"> {{ card.prenoms }}</span>
+              <span
+                v-if="card.prenoms"
+                class="prenoms"
+              > {{ card.prenoms }}</span>
             </td>
-            <td class="muted">{{ card.poste || '—' }}</td>
-            <td class="muted">{{ formatDate(card.created_at) }}</td>
+            <td class="muted">
+              {{ card.poste || '—' }}
+            </td>
+            <td class="muted">
+              {{ formatDate(card.created_at) }}
+            </td>
             <td class="num">
               <span class="scan-pill">{{ card.scan_count }}</span>
             </td>
@@ -96,7 +141,9 @@ async function logout(): Promise<void> {
                 class="act"
                 title="Re-télécharger le QR"
                 @click="downloadQr(card)"
-              >💾</button>
+              >
+                💾
+              </button>
             </td>
           </tr>
         </tbody>

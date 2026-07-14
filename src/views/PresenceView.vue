@@ -39,15 +39,26 @@ function handleCancel(): void {
 
 <template>
   <div class="presence-view">
-    <div v-if="isLoading" class="loading">Chargement de la session...</div>
+    <div
+      v-if="isLoading"
+      class="loading"
+    >
+      Chargement de la session...
+    </div>
 
-    <div v-else-if="loadError" class="error-state">
+    <div
+      v-else-if="loadError"
+      class="error-state"
+    >
       <span class="error-icon">⚠️</span>
       <h2>Session introuvable</h2>
       <p>{{ loadError }}</p>
     </div>
 
-    <div v-else-if="session" class="presence-content">
+    <div
+      v-else-if="session"
+      class="presence-content"
+    >
       <div class="session-banner">
         <h2>{{ session.nom }}</h2>
         <p>📅 {{ new Date(session.date).toLocaleDateString('fr-FR', { dateStyle: 'full' }) }}</p>

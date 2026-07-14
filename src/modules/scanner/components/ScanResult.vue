@@ -39,15 +39,23 @@ const canMarkPresence = computed(() =>
 </script>
 
 <template>
-  <div class="scan-result" :class="`format-${result.format}`">
+  <div
+    class="scan-result"
+    :class="`format-${result.format}`"
+  >
     <div class="result-header">
       <span class="result-badge">{{ formatLabel }}</span>
       <span class="result-time">{{ formattedTime }}</span>
     </div>
 
     <div class="result-content">
-      <p class="result-text">{{ result.content }}</p>
-      <p v-if="result.sessionId" class="result-session">
+      <p class="result-text">
+        {{ result.content }}
+      </p>
+      <p
+        v-if="result.sessionId"
+        class="result-session"
+      >
         Session : <code>{{ result.sessionId }}</code>
       </p>
     </div>
@@ -67,19 +75,31 @@ const canMarkPresence = computed(() =>
         :disabled="isMarking"
         @click="$emit('markPresence')"
       >
-        <span v-if="isMarking" class="spinner"></span>
+        <span
+          v-if="isMarking"
+          class="spinner"
+        />
         <span v-else>👤 Confirmer mon identité</span>
       </button>
 
-      <div v-if="agentConfirmed" class="confirmed-badge">
+      <div
+        v-if="agentConfirmed"
+        class="confirmed-badge"
+      >
         ✅ {{ agentName || 'Agent' }} — Présence confirmée
       </div>
 
-      <div v-else-if="presenceMarked" class="marked-badge">
+      <div
+        v-else-if="presenceMarked"
+        class="marked-badge"
+      >
         ✅ Présence enregistrée
       </div>
 
-      <button class="btn btn-dismiss" @click="$emit('dismiss')">
+      <button
+        class="btn btn-dismiss"
+        @click="$emit('dismiss')"
+      >
         ✕
       </button>
     </div>

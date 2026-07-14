@@ -23,7 +23,10 @@ async function handleSubmit(): Promise<void> {
 </script>
 
 <template>
-  <form @submit.prevent="handleSubmit" class="qr-form-card">
+  <form
+    class="qr-form-card"
+    @submit.prevent="handleSubmit"
+  >
     <div class="form-header">
       <span class="icon">⚙️</span>
       <h3>Configuration</h3>
@@ -41,17 +44,29 @@ async function handleSubmit(): Promise<void> {
           class="text-input"
           :class="{ 'is-valid': isUrlValid === true, 'is-invalid': isUrlValid === false }"
           required
-        />
-        <span v-if="isUrlValid === true" class="validation-badge valid">✓</span>
-        <span v-if="isUrlValid === false" class="validation-badge invalid">✗</span>
+        >
+        <span
+          v-if="isUrlValid === true"
+          class="validation-badge valid"
+        >✓</span>
+        <span
+          v-if="isUrlValid === false"
+          class="validation-badge invalid"
+        >✗</span>
       </div>
-      <p v-if="isUrlValid === false" class="field-error">
+      <p
+        v-if="isUrlValid === false"
+        class="field-error"
+      >
         Veuillez saisir une URL valide.
       </p>
     </div>
 
     <!-- Collapsible Advanced Settings -->
-    <details class="advanced-settings" open>
+    <details
+      class="advanced-settings"
+      open
+    >
       <summary class="settings-trigger">
         <span>Options d'affichage avancées</span>
         <span class="chevron">↓</span>
@@ -61,33 +76,69 @@ async function handleSubmit(): Promise<void> {
         <!-- Size -->
         <div class="form-group">
           <label for="qr-size">Taille (pixels)</label>
-          <select id="qr-size" v-model.number="formData.size" class="select-input">
-            <option :value="128">128 x 128</option>
-            <option :value="256">256 x 256</option>
-            <option :value="512">512 x 512</option>
-            <option :value="1024">1024 x 1024</option>
+          <select
+            id="qr-size"
+            v-model.number="formData.size"
+            class="select-input"
+          >
+            <option :value="128">
+              128 x 128
+            </option>
+            <option :value="256">
+              256 x 256
+            </option>
+            <option :value="512">
+              512 x 512
+            </option>
+            <option :value="1024">
+              1024 x 1024
+            </option>
           </select>
         </div>
 
         <!-- Format -->
         <div class="form-group">
           <label for="qr-format">Format</label>
-          <select id="qr-format" v-model="formData.format" class="select-input">
-            <option value="png">PNG</option>
-            <option value="jpeg">JPEG</option>
-            <option value="webp">WEBP</option>
-            <option value="svg">SVG</option>
+          <select
+            id="qr-format"
+            v-model="formData.format"
+            class="select-input"
+          >
+            <option value="png">
+              PNG
+            </option>
+            <option value="jpeg">
+              JPEG
+            </option>
+            <option value="webp">
+              WEBP
+            </option>
+            <option value="svg">
+              SVG
+            </option>
           </select>
         </div>
 
         <!-- Correction Level -->
         <div class="form-group">
           <label for="qr-correction">Niveau de correction</label>
-          <select id="qr-correction" v-model="formData.errorCorrectionLevel" class="select-input">
-            <option value="L">Faible (L)</option>
-            <option value="M">Moyen (M)</option>
-            <option value="Q">Élevé (Q)</option>
-            <option value="H">Maximum (H)</option>
+          <select
+            id="qr-correction"
+            v-model="formData.errorCorrectionLevel"
+            class="select-input"
+          >
+            <option value="L">
+              Faible (L)
+            </option>
+            <option value="M">
+              Moyen (M)
+            </option>
+            <option value="Q">
+              Élevé (Q)
+            </option>
+            <option value="H">
+              Maximum (H)
+            </option>
           </select>
         </div>
 
@@ -101,7 +152,7 @@ async function handleSubmit(): Promise<void> {
             min="0"
             max="10"
             class="number-input"
-          />
+          >
         </div>
 
         <!-- Foreground Color -->
@@ -113,13 +164,13 @@ async function handleSubmit(): Promise<void> {
               v-model="formData.foreground"
               type="color"
               class="color-picker"
-            />
+            >
             <input
-              type="text"
               v-model="formData.foreground"
+              type="text"
               class="color-text"
               maxlength="7"
-            />
+            >
           </div>
         </div>
 
@@ -132,29 +183,44 @@ async function handleSubmit(): Promise<void> {
               v-model="formData.background"
               type="color"
               class="color-picker"
-            />
+            >
             <input
-              type="text"
               v-model="formData.background"
+              type="text"
               class="color-text"
               maxlength="7"
-            />
+            >
           </div>
         </div>
       </div>
     </details>
 
-    <div v-if="errorMessage" class="error-banner">
+    <div
+      v-if="errorMessage"
+      class="error-banner"
+    >
       ⚠️ {{ errorMessage }}
     </div>
 
     <!-- Actions -->
     <div class="form-actions">
-      <button type="button" @click="reset" class="btn btn-secondary" :disabled="isGenerating">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        :disabled="isGenerating"
+        @click="reset"
+      >
         Réinitialiser
       </button>
-      <button type="submit" class="btn btn-primary" :disabled="isGenerating || isUrlValid === false">
-        <span v-if="isGenerating" class="spinner"></span>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        :disabled="isGenerating || isUrlValid === false"
+      >
+        <span
+          v-if="isGenerating"
+          class="spinner"
+        />
         <span>{{ isGenerating ? 'Génération...' : 'Générer le QR Code' }}</span>
       </button>
     </div>

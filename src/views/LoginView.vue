@@ -29,7 +29,10 @@ async function handleSubmit(): Promise<void> {
 
 <template>
   <div class="login-wrap">
-    <form class="login-card" @submit.prevent="handleSubmit">
+    <form
+      class="login-card"
+      @submit.prevent="handleSubmit"
+    >
       <div class="login-head">
         <span class="lock">🔐</span>
         <h2>Espace administration</h2>
@@ -46,7 +49,7 @@ async function handleSubmit(): Promise<void> {
           placeholder="admin@exemple.com"
           required
           class="input"
-        />
+        >
       </div>
 
       <div class="field">
@@ -59,13 +62,25 @@ async function handleSubmit(): Promise<void> {
           placeholder="••••••••"
           required
           class="input"
-        />
+        >
       </div>
 
-      <p v-if="errorMessage" class="error">⚠️ {{ errorMessage }}</p>
+      <p
+        v-if="errorMessage"
+        class="error"
+      >
+        ⚠️ {{ errorMessage }}
+      </p>
 
-      <button type="submit" class="btn" :disabled="isLoading">
-        <span v-if="isLoading" class="spinner"></span>
+      <button
+        type="submit"
+        class="btn"
+        :disabled="isLoading"
+      >
+        <span
+          v-if="isLoading"
+          class="spinner"
+        />
         <span>{{ isLoading ? 'Connexion…' : 'Se connecter' }}</span>
       </button>
     </form>

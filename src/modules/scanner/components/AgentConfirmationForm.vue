@@ -47,11 +47,18 @@ function handleSubmit(): void {
       <h3>Confirmation de présence</h3>
     </div>
 
-    <div v-if="alreadyConfirmed" class="already-confirmed">
+    <div
+      v-if="alreadyConfirmed"
+      class="already-confirmed"
+    >
       ✅ Votre présence est déjà confirmée pour cette session.
     </div>
 
-    <form v-else @submit.prevent="handleSubmit" class="confirmation-form">
+    <form
+      v-else
+      class="confirmation-form"
+      @submit.prevent="handleSubmit"
+    >
       <p class="form-description">
         Veuillez entrer votre nom pour confirmer votre présence à cette session.
       </p>
@@ -67,9 +74,19 @@ function handleSubmit(): void {
           :class="{ 'input-error': nomError || error }"
           autofocus
           :disabled="isMarking"
-        />
-        <p v-if="nomError" class="error-text">{{ nomError }}</p>
-        <p v-if="error" class="error-text server-error">{{ error }}</p>
+        >
+        <p
+          v-if="nomError"
+          class="error-text"
+        >
+          {{ nomError }}
+        </p>
+        <p
+          v-if="error"
+          class="error-text server-error"
+        >
+          {{ error }}
+        </p>
       </div>
 
       <div class="session-info">
@@ -83,14 +100,17 @@ function handleSubmit(): void {
           class="btn btn-confirm"
           :disabled="!isValid || isMarking"
         >
-          <span v-if="isMarking" class="spinner"></span>
+          <span
+            v-if="isMarking"
+            class="spinner"
+          />
           <span v-else>✅ Confirmer ma présence</span>
         </button>
         <button
           type="button"
           class="btn btn-cancel"
-          @click="$emit('cancel')"
           :disabled="isMarking"
+          @click="$emit('cancel')"
         >
           Annuler
         </button>

@@ -1,6 +1,5 @@
 import type { Router } from 'vue-router'
 import { log } from '@core/logger/logger'
-import { supabase } from '@core/database/supabaseClient'
 
 export function registerGuards(router: Router): void {
   router.beforeEach(async (to, _from, next) => {
@@ -8,10 +7,10 @@ export function registerGuards(router: Router): void {
 
     log.debug(`Navigation vers: ${to.path}`)
 
-    // Routes protégées : nécessitent une session admin active.
+    // Routes protégées : nécessitent un token JWT en localStorage.
     if (to.meta.requiresAuth) {
-      const { data } = await supabase.auth.getSession()
-      if (!data.session) {
+      const token = localStorage.getItem('auth_token')
+      if (!token) {
         next({ name: 'login', query: { redirect: to.fullPath } })
         return
       }

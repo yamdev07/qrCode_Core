@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: qrpostgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: qradmin
+      POSTGRES_PASSWORD: qrpassword
+      POSTGRES_DB: qrdb
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./server/sql/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: qrpgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@qrapp.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - '5050:80'
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata:

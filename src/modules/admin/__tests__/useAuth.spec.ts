@@ -1,34 +1,27 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useAuth } from '../composables/useAuth'
-import { supabase } from '@core/database/supabaseClient'
+import { authLogin, authLogout } from '@core/database/supabaseClient'
 
 vi.mock('@core/logger/logger', () => ({
-  log: { info: vi.fn(), error: vi.fn() }
+  log: { info: vi.fn(), error: vi.fn(), debug: vi.fn() }
 }))
 
 vi.mock('@core/database/supabaseClient', () => ({
-  supabase: {
-    auth: {
-      signInWithPassword: vi.fn(),
-      signOut: vi.fn().mockResolvedValue({ error: null }),
-      getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
-      onAuthStateChange: vi.fn()
-    }
-  }
+  authLogin: vi.fn(),
+  authGetSession: vi.fn().mockResolvedValue({ session: null }),
+  authLogout: vi.fn().mockResolvedValue({})
 }))
 
-const fakeSession = { user: { email: 'admin@test.com' } }
+const fakeUser = { id: '1', email: 'admin@test.com', role: 'admin' }
 
 describe('useAuth composable', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    localStorage.clear()
   })
 
   it('translates invalid credentials error', async () => {
-    vi.mocked(supabase.auth.signInWithPassword).mockResolvedValue({
-      data: { session: null, user: null },
-      error: { message: 'Invalid login credentials' }
-    } as never)
+    vi.mocked(authLogin).mockRejectedValue(new Error('Invalid login credentials'))
 
     const { signIn } = useAuth()
     await expect(signIn('a@b.com', 'wrong')).rejects.toThrow(
@@ -37,23 +30,27 @@ describe('useAuth composable', () => {
   })
 
   it('signs in and exposes the user email', async () => {
-    vi.mocked(supabase.auth.signInWithPassword).mockResolvedValue({
-      data: { session: fakeSession, user: fakeSession.user },
-      error: null
-    } as never)
+    vi.mocked(authLogin).mockResolvedValue({
+      token: 'fake-jwt-token',
+      user: fakeUser
+    })
 
     const { signIn, isAuthenticated, userEmail } = useAuth()
     await signIn('admin@test.com', 'good')
 
     expect(isAuthenticated.value).toBe(true)
     expect(userEmail.value).toBe('admin@test.com')
+    expect(localStorage.getItem('auth_token')).toBe('fake-jwt-token')
   })
 
   it('signs out and clears the session', async () => {
+    localStorage.setItem('auth_token', 'some-token')
+
     const { signOut, isAuthenticated } = useAuth()
     await signOut()
 
-    expect(supabase.auth.signOut).toHaveBeenCalled()
+    expect(authLogout).toHaveBeenCalled()
+    expect(localStorage.getItem('auth_token')).toBeNull()
     expect(isAuthenticated.value).toBe(false)
   })
 })

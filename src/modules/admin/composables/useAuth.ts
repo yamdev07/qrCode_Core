@@ -1,50 +1,66 @@
 import { ref, computed } from 'vue'
-import type { Session } from '@supabase/supabase-js'
-import { supabase } from '@core/database/supabaseClient'
+import { authLogin, authGetSession, authLogout } from '@core/database/supabaseClient'
 import { log } from '@core/logger/logger'
 
-const session = ref<Session | null>(null)
+type AuthSession = {
+  user: { id: string; email: string; role: string }
+  access_token: string
+}
+
+const session = ref<AuthSession | null>(null)
 const isReady = ref(false)
 let initialized = false
 
-/** Traduit les messages d'erreur d'auth Supabase courants. */
+/** Traduit les messages d'erreur d'auth courants. */
 function translateAuthError(message: string): string {
-  if (/invalid login credentials/i.test(message)) {
+  if (/invalid login credentials|incorrect/i.test(message)) {
     return 'Email ou mot de passe incorrect.'
-  }
-  if (/email not confirmed/i.test(message)) {
-    return "L'email n'est pas confirmé."
   }
   return message
 }
 
 export function useAuth() {
-  /** Charge la session courante et écoute les changements (une seule fois). */
+  /** Charge la session courante depuis le token en localStorage (une seule fois). */
   async function init(): Promise<void> {
     if (initialized) return
     initialized = true
-    const { data } = await supabase.auth.getSession()
-    session.value = data.session
-    supabase.auth.onAuthStateChange((_event, newSession) => {
-      session.value = newSession
-    })
+
+    // Restore token from localStorage
+    const token = localStorage.getItem('auth_token')
+    if (token) {
+      try {
+        const data = await authGetSession()
+        session.value = data.session
+      } catch {
+        localStorage.removeItem('auth_token')
+        session.value = null
+      }
+    }
+
     isReady.value = true
   }
 
   async function signIn(email: string, password: string): Promise<void> {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password
-    })
-    if (error) {
-      throw new Error(translateAuthError(error.message))
+    try {
+      const data = await authLogin(email, password)
+      localStorage.setItem('auth_token', data.token)
+      session.value = {
+        user: data.user,
+        access_token: data.token
+      }
+      log.info(`Connexion admin: ${email}`)
+    } catch (err: any) {
+      throw new Error(translateAuthError(err.message || 'Erreur de connexion'))
     }
-    session.value = data.session
-    log.info(`Connexion admin: ${email}`)
   }
 
   async function signOut(): Promise<void> {
-    await supabase.auth.signOut()
+    try {
+      await authLogout()
+    } catch {
+      // Ignore errors on logout
+    }
+    localStorage.removeItem('auth_token')
     session.value = null
   }
 

@@ -1,4 +1,11 @@
-import { supabase } from '@core/database/supabaseClient'
+import {
+  sessionsList,
+  sessionsCreate,
+  sessionsGetById,
+  sessionsGetByCode,
+  sessionsUpdate,
+  sessionsDelete
+} from '@core/database/supabaseClient'
 import type { Session, SessionFormData, SessionWithPresenceCount } from '@modules/sessions/types/session.types'
 import { sessionSchema } from '@core/utils/validators'
 import { ValidationError, NotFoundError, ApiError } from '@core/errors/AppError'
@@ -22,97 +29,70 @@ export async function createSession(data: SessionFormData): Promise<Session> {
     })
   }
 
-  const { data: session, error } = await supabase
-    .from('sessions')
-    .insert({
+  try {
+    const result = await sessionsCreate({
       nom: validation.data.nom,
-      code_unique: validation.data.code_unique,
+      code_unique: validation.data.code_unique || generateUniqueCode(),
       date: validation.data.date || new Date().toISOString()
     })
-    .select('*')
-    .single()
 
-  if (error) {
-    log.error('Erreur création session', error)
-    throw new ApiError('Impossible de créer la session', 500, { dbError: error })
+    const session = result as unknown as Session
+    log.info(`Session créée: ${session.nom} (${session.code_unique})`)
+    return session
+  } catch (err) {
+    log.error('Erreur création session', err)
+    throw new ApiError('Impossible de créer la session', 500)
   }
-
-  log.info(`Session créée: ${session.nom} (${session.code_unique})`)
-  return session as Session
 }
 
 export async function getSessions(): Promise<SessionWithPresenceCount[]> {
-  const { data: sessions, error } = await supabase
-    .from('sessions')
-    .select('*, presences(count)')
-    .order('date', { ascending: false })
-
-  if (error) {
-    log.error('Erreur récupération sessions', error)
-    throw new ApiError('Impossible de récupérer les sessions', 500, { dbError: error })
+  try {
+    const sessions = await sessionsList()
+    return (sessions as unknown as SessionWithPresenceCount[]).map(session => ({
+      ...session,
+      presence_count: (session as any).presence_count ?? 0
+    }))
+  } catch (err) {
+    log.error('Erreur récupération sessions', err)
+    throw new ApiError('Impossible de récupérer les sessions', 500)
   }
-
-  return (sessions as unknown as SessionWithPresenceCount[]).map(session => ({
-    ...session,
-    presence_count: (session as any).presences?.[0]?.count ?? 0
-  }))
 }
 
 export async function getSessionById(id: string): Promise<Session> {
-  const { data: session, error } = await supabase
-    .from('sessions')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  if (error || !session) {
+  try {
+    const session = await sessionsGetById(id)
+    return session as Session
+  } catch {
     throw new NotFoundError('Session introuvable', { sessionId: id })
   }
-
-  return session as Session
 }
 
 export async function getSessionByCode(code: string): Promise<Session> {
-  const { data: session, error } = await supabase
-    .from('sessions')
-    .select('*')
-    .eq('code_unique', code)
-    .single()
-
-  if (error || !session) {
+  try {
+    const session = await sessionsGetByCode(code)
+    return session as Session
+  } catch {
     throw new NotFoundError('Session introuvable', { code })
   }
-
-  return session as Session
 }
 
 export async function updateSession(id: string, data: Partial<SessionFormData>): Promise<Session> {
-  const { data: session, error } = await supabase
-    .from('sessions')
-    .update(data)
-    .eq('id', id)
-    .select('*')
-    .single()
-
-  if (error) {
-    throw new ApiError('Impossible de mettre à jour la session', 500, { dbError: error })
+  try {
+    const session = await sessionsUpdate(id, data as Record<string, unknown>)
+    log.info(`Session mise à jour: ${id}`)
+    return session as Session
+  } catch {
+    throw new ApiError('Impossible de mettre à jour la session', 500)
   }
-
-  log.info(`Session mise à jour: ${id}`)
-  return session as Session
 }
 
 export async function deleteSession(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('sessions')
-    .delete()
-    .eq('id', id)
-
-  if (error) {
-    throw new ApiError('Impossible de supprimer la session', 500, { dbError: error })
+  try {
+    await sessionsDelete(id)
+    log.info(`Session supprimée: ${id}`)
+  } catch {
+    throw new ApiError('Impossible de supprimer la session', 500)
   }
-
-  log.info(`Session supprimée: ${id}`)
 }
 
 export async function getSessionQRUrl(session: Session): Promise<string> {

@@ -3,7 +3,7 @@ import { ofetch } from 'ofetch'
 import { ApiError } from '@core/errors/AppError'
 import { log } from '@core/logger/logger'
 
-const BASE_URL = import.meta.env.VITE_API_URL || ''
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
 export const apiClient = ofetch.create({
   baseURL: BASE_URL,
@@ -14,6 +14,13 @@ export const apiClient = ofetch.create({
   async onRequest({ request, options }) {
     const startTime = performance.now()
     ;(options as any)._startTime = startTime
+    // Attach JWT token if present
+    const token = localStorage.getItem('auth_token')
+    if (token) {
+      const headers = new Headers(options.headers)
+      headers.set('Authorization', `Bearer ${token}`)
+      options.headers = headers
+    }
     log.debug(`Requête ${options.method?.toUpperCase() || 'GET'} ${request}`)
   },
 
@@ -24,7 +31,6 @@ export const apiClient = ofetch.create({
       const body = (response as any)._data
       throw new ApiError(body?.message || `Erreur HTTP ${response.status}`, response.status, body)
     }
-
   },
 
   async onResponseError({ response, options }) {

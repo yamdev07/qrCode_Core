@@ -1,4 +1,4 @@
-import { supabase } from '@core/database/supabaseClient'
+import { cardsList, cardsInsert, cardsIncrementScan } from '@core/database/supabaseClient'
 import { ApiError } from '@core/errors/AppError'
 import { log } from '@core/logger/logger'
 import type { CardRecord } from '@modules/generator/types/cards.types'
@@ -15,49 +15,40 @@ export type NewCardRecord = {
 
 /** Enregistre une carte dans la table `cards` (suivi & admin). */
 export async function insertCardRecord(record: NewCardRecord): Promise<void> {
-  const { error } = await supabase.from('cards').insert({
-    id: record.id,
-    nom: record.nom,
-    prenoms: record.prenoms,
-    poste: record.poste,
-    qr_path: record.qr_path,
-    view_url: record.view_url
-  })
-
-  if (error) {
-    log.error('Échec enregistrement carte', error)
-    throw new ApiError("Impossible d'enregistrer la carte", 500, {
-      dbError: error.message
+  try {
+    await cardsInsert({
+      id: record.id,
+      nom: record.nom,
+      prenoms: record.prenoms,
+      poste: record.poste,
+      qr_path: record.qr_path,
+      view_url: record.view_url
     })
+  } catch (err) {
+    log.error('Échec enregistrement carte', err)
+    throw new ApiError("Impossible d'enregistrer la carte", 500)
   }
 }
 
 /**
- * Incrémente le compteur de scans d'une carte via une fonction RPC
- * `increment_card_scan` (SECURITY DEFINER) — fonctionne avec la clé anon
- * sans donner d'accès en lecture à la table.
+ * Incrémente le compteur de scans d'une carte via l'API backend.
  */
 export async function incrementCardScan(cardId: string): Promise<void> {
-  const { error } = await supabase.rpc('increment_card_scan', { card_id: cardId })
-  if (error) {
+  try {
+    await cardsIncrementScan(cardId)
+  } catch (err) {
     // Non bloquant pour l'affichage de la carte : on logge seulement.
-    log.error('Échec incrément du compteur de scans', error)
+    log.error('Échec incrément du compteur de scans', err)
   }
 }
 
 /** Liste toutes les cartes (réservé aux administrateurs connectés). */
 export async function listCards(): Promise<CardRecord[]> {
-  const { data, error } = await supabase
-    .from('cards')
-    .select('*')
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    log.error('Échec listing des cartes', error)
-    throw new ApiError('Impossible de charger les cartes', 500, {
-      dbError: error.message
-    })
+  try {
+    const data = await cardsList()
+    return (data ?? []) as CardRecord[]
+  } catch (err) {
+    log.error('Échec listing des cartes', err)
+    throw new ApiError('Impossible de charger les cartes', 500)
   }
-
-  return (data ?? []) as CardRecord[]
 }

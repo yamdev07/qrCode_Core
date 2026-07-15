@@ -18,7 +18,7 @@ const app = express()
 const PORT = parseInt(process.env.PORT || '3001')
 
 // Middleware
-app.use(cors({ origin: ['http://localhost:3000', 'http://127.0.0.1:3000'] }))
+app.use(cors())
 app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ extended: true, limit: '50mb' }))
 
@@ -28,12 +28,12 @@ app.use('/uploads', express.static(UPLOAD_DIR))
 
 // Public routes
 app.use('/api/auth', authRoutes)
+app.use('/api/cards', cardsRoutes)
+app.use('/api/storage', storageRoutes)
 
 // Protected routes (require JWT)
-app.use('/api/cards', authMiddleware, cardsRoutes)
 app.use('/api/sessions', authMiddleware, sessionsRoutes)
 app.use('/api/presences', authMiddleware, presencesRoutes)
-app.use('/api/storage', authMiddleware, storageRoutes)
 
 // Health check
 app.get('/api/health', (_req, res) => {

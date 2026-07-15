@@ -30,7 +30,9 @@ function extFromBlob(blob: Blob): string {
 
 /** URL publique de la page d'affichage encodée dans le QR. */
 export function buildCardViewUrl(cardId: string): string {
-  return `${window.location.origin}/carte/${cardId}`
+  // Use VITE_APP_URL if set (for network access), otherwise fall back to current origin
+  const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin
+  return `${baseUrl}/carte/${cardId}`
 }
 
 /**

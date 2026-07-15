@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
+import { generateUUID } from '@core/utils/uuid'
 import type { SessionFormData } from '@modules/sessions/types/session.types'
 
 const emit = defineEmits<{
@@ -44,7 +45,7 @@ function handleSubmit(): void {
 }
 
 function generateCode(): void {
-  formData.code_unique = crypto.randomUUID().split('-')[0].toUpperCase()
+  formData.code_unique = generateUUID().split('-')[0].toUpperCase()
 }
 </script>
 

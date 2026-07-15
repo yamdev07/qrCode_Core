@@ -9,10 +9,11 @@ import {
 import type { Session, SessionFormData, SessionWithPresenceCount } from '@modules/sessions/types/session.types'
 import { sessionSchema } from '@core/utils/validators'
 import { ValidationError, NotFoundError, ApiError } from '@core/errors/AppError'
+import { generateUUID } from '@core/utils/uuid'
 import { log } from '@core/logger/logger'
 
 function generateUniqueCode(): string {
-  return crypto.randomUUID().split('-')[0].toUpperCase()
+  return generateUUID().split('-')[0].toUpperCase()
 }
 
 export async function createSession(data: SessionFormData): Promise<Session> {

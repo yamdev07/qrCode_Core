@@ -1,5 +1,6 @@
 import { computed } from 'vue'
 import { useLocalStorage } from '@core/composables/useLocalStorage'
+import { generateUUID } from '@core/utils/uuid'
 import type { QRHistoryItem } from '@modules/generator/types/generator.types'
 
 const MAX_HISTORY_ITEMS = 50
@@ -17,7 +18,7 @@ export function useQrHistory() {
   function addToHistory(item: Omit<QRHistoryItem, 'id' | 'createdAt'>): void {
     const newItem: QRHistoryItem = {
       ...item,
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       createdAt: new Date().toISOString()
     }
 

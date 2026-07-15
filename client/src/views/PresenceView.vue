@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { usePresence } from '@modules/scanner/composables/usePresence'
+import { generateUUID } from '@core/utils/uuid'
 import { getSessionByCode } from '@modules/sessions/services/session.service'
 import AgentConfirmationForm from '@modules/scanner/components/AgentConfirmationForm.vue'
 import type { Session } from '@modules/sessions/types/session.types'
@@ -28,7 +29,7 @@ onMounted(async () => {
 async function handleConfirm(agentNom: string): Promise<void> {
   if (!session.value) return
 
-  const userId = crypto.randomUUID()
+  const userId = generateUUID()
   await mark(session.value.id, userId, agentNom)
 }
 

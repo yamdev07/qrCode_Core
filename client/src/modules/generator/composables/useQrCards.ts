@@ -10,6 +10,7 @@ import { extractCardFields } from '@modules/generator/services/cardOcr.service'
 import { downloadQRCode } from '@modules/generator/services/qrGenerator.service'
 import { handleError } from '@core/errors/errorHandler'
 import { personCardSchema } from '@core/utils/validators'
+import { generateUUID } from '@core/utils/uuid'
 import { log } from '@core/logger/logger'
 import type {
   PersonCard,
@@ -20,7 +21,7 @@ import type {
 
 function emptyPerson(): PersonCard {
   return {
-    id: crypto.randomUUID(),
+    id: generateUUID(),
     nom: '',
     prenoms: '',
     poste: '',
@@ -85,7 +86,7 @@ export function useQrCards() {
     for (const file of Array.from(files)) {
       if (!file.type.startsWith('image/')) continue
       const image: CardImage = {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         name: file.name,
         dataUrl: await readFileAsDataUrl(file)
       }

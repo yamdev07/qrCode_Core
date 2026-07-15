@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import QrScannerCamera from '@modules/scanner/components/QrScannerCamera.vue'
 import AgentConfirmationForm from '@modules/scanner/components/AgentConfirmationForm.vue'
 import { usePresence } from '@modules/scanner/composables/usePresence'
+import { generateUUID } from '@core/utils/uuid'
 import type { ScanResult } from '@modules/scanner/types/scanner.types'
 
 const { isMarking, confirmation, error, mark, reset } = usePresence()
@@ -26,7 +27,7 @@ function handleScanError(message: string): void {
 async function handleConfirmPresence(agentNom: string): Promise<void> {
   if (!currentScanResult.value?.sessionId) return
 
-  const userId = crypto.randomUUID()
+  const userId = generateUUID()
   const success = await mark(
     currentScanResult.value.sessionId,
     userId,

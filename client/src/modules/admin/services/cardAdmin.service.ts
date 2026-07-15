@@ -24,9 +24,11 @@ export async function insertCardRecord(record: NewCardRecord): Promise<void> {
       qr_path: record.qr_path,
       view_url: record.view_url
     })
-  } catch (err) {
-    log.error('Échec enregistrement carte', err)
-    throw new ApiError("Impossible d'enregistrer la carte", 500)
+  } catch (err: any) {
+    console.error('CARD INSERT ERROR:', err)
+    const detail = err?.context?.error || err?.context?.message || err?.data?.message || err?.message || String(err)
+    log.error('Échec enregistrement carte', detail)
+    throw new ApiError(`Impossible d'enregistrer la carte: ${detail}`, 500)
   }
 }
 

@@ -41,14 +41,17 @@ router.post('/', async (req, res) => {
 
     await pool.query(
       `INSERT INTO cards (id, nom, prenoms, poste, qr_path, view_url)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
+       VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT (id) DO UPDATE SET
+         nom = EXCLUDED.nom, prenoms = EXCLUDED.prenoms, poste = EXCLUDED.poste,
+         qr_path = EXCLUDED.qr_path, view_url = EXCLUDED.view_url`,
       [id, nom, prenoms || '', poste || '', qr_path || null, view_url || null]
     )
 
     res.status(201).json({ message: 'Carte enregistrée' })
   } catch (err) {
     console.error('Error inserting card:', err)
-    res.status(500).json({ message: "Impossible d'enregistrer la carte" })
+    res.status(500).json({ message: "Impossible d'enregistrer la carte", error: (err as Error).message })
   }
 })
 

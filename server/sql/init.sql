@@ -58,8 +58,13 @@ AS $$
   UPDATE cards SET scan_count = scan_count + 1 WHERE id = card_id;
 $$;
 
--- 6) Compte admin par défaut (mot de passe: admin123)
--- hash bcrypt du mot de passe "admin123"
+-- 6) Permissions pour l'utilisateur applicatif ---------------------------
+GRANT USAGE ON SCHEMA public TO qradmin;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO qradmin;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO qradmin;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO qradmin;
+
+-- 7) Compte admin par defaut (mot de passe: admin123)
 INSERT INTO users (email, password, role)
-VALUES ('admin@qrapp.local', '$2b$10$YQ8GvQx1z2Vz5X5X5X5X5eK1wC2vR3nM4bL6jH8kP9oI0uY7tR6s', 'admin')
+VALUES ('admin@qrapp.local', '$2b$10$8hy0PUrdwNGZtp/dYeFcQepOwG8LFxIJvcGI.zg5mxZ3orYt/Hm9u', 'admin')
 ON CONFLICT (email) DO NOTHING;

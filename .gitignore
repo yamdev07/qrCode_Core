@@ -31,3 +31,6 @@ dist-ssr
 # Server uploads (user-generated content)
 server/uploads/*
 !server/uploads/.gitkeep
+
+# GitHub
+.github/

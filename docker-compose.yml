@@ -1,4 +1,10 @@
-version: '3.8'
+# Docker Compose is optional — PostgreSQL runs locally by default.
+# Only use this if you prefer running PostgreSQL in a container.
+#
+# Usage:
+#   docker compose up -d
+#   cd server && npm run dev
+#   npm run dev
 
 services:
   postgres:

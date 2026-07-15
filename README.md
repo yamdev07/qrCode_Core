@@ -10,7 +10,7 @@ Application de generation de QR codes pour cartes professionnelles, avec suivi d
 | UI | PrimeVue + TailwindCSS |
 | Etat | Pinia |
 | Backend | Express.js (server/) |
-| BDD | PostgreSQL 16 (local, via Docker) |
+| BDD | PostgreSQL (local) |
 | Auth | JWT (bcrypt + jsonwebtoken) |
 | Stockage | Fichiers locaux (server/uploads/) |
 | Tests | Vitest |
@@ -22,7 +22,7 @@ qr-code-core/
 ├── src/                        # Frontend Vue 3
 │   ├── core/                   # Infrastructure partagee
 │   │   ├── api/                # Client HTTP (ofetch)
-│   │   ├── database/           # Client API local (remplace Supabase)
+│   │   ├── database/           # Client API local
 │   │   ├── errors/             # Classes d'erreur custom
 │   │   ├── logger/             # Utilitaire de log (consola)
 │   │   ├── composables/        # Composables partages
@@ -56,7 +56,7 @@ qr-code-core/
 │   ├── tsconfig.json
 │   └── .env                    # Variables d'environnement backend
 │
-├── docker-compose.yml          # PostgreSQL + pgAdmin
+├── docker-compose.yml          # (optionnel) PostgreSQL + pgAdmin en container
 ├── .env                        # Variables frontend
 └── package.json                # Dependances frontend
 ```
@@ -64,7 +64,7 @@ qr-code-core/
 ## Pre-requis
 
 - Node.js >= 18
-- Docker + Docker Compose
+- PostgreSQL (installe localement ou via Docker)
 - npm
 
 ## Installation
@@ -84,34 +84,51 @@ npm install
 cd ..
 ```
 
-### 2. Demarrer PostgreSQL
+### 2. Configurer PostgreSQL
+
+#### Option A : PostgreSQL local (recommande)
+
+Creer la base et l'utilisateur :
+
+```bash
+sudo -u postgres psql -c "CREATE USER qradmin WITH PASSWORD 'qrpassword' CREATEDB;"
+sudo -u postgres psql -c "CREATE DATABASE qrdb OWNER qradmin;"
+sudo -u postgres psql -d qrdb -f server/sql/init.sql
+```
+
+#### Option B : Via Docker
 
 ```bash
 docker compose up -d
 ```
 
-Cela lance :
-- **PostgreSQL** sur `localhost:5432` (user: `qradmin`, pass: `qrpassword`, db: `qrdb`)
-- **pgAdmin** sur `http://localhost:5050` (email: `admin@qrapp.local`, pass: `admin`)
-
-Le schema de la base est initialise automatiquement via `server/sql/init.sql`.
+Le schema est initialise automatiquement via `server/sql/init.sql`.
 
 ### 3. Creer le compte administrateur
 
-Le mot de passe par defaut dans `init.sql` est un hash bcrypt a remplacer. Generer votre hash :
+Generer un hash bcrypt pour votre mot de passe :
 
 ```bash
 cd server
 node -e "const b=require('bcrypt');b.hash('votre_mdp',10).then(h=>console.log(h))"
 ```
 
-Collez le hash dans `server/sql/init.sql` dans la ligne INSERT INTO users, puis relancez PostgreSQL :
+Puis inserer l'utilisateur :
 
 ```bash
-docker compose down -v && docker compose up -d
+sudo -u postgres psql -d qrdb -c "INSERT INTO users (email, password, role) VALUES ('admin@qrapp.local', 'VOTRE_HASH_ICI', 'admin');"
 ```
 
-Ou creer l'utilisateur directement via pgAdmin ou psql.
+Ou via `psql` directement :
+
+```bash
+sudo -u postgres psql -d qrdb
+```
+
+```sql
+INSERT INTO users (email, password, role)
+VALUES ('admin@qrapp.local', '$2b$10$...', 'admin');
+```
 
 ### 4. Configurer l'environnement
 
@@ -187,15 +204,6 @@ npm run dev          # Serveur de dev (avec reload)
 npm run start        # Serveur production
 ```
 
-### Docker
-
-```bash
-docker compose up -d           # Demarrer PostgreSQL
-docker compose down            # Arreter PostgreSQL
-docker compose down -v         # Arreter + supprimer les donnees
-docker compose logs postgres   # Voir les logs PostgreSQL
-```
-
 ## Donnees
 
 Le schema PostgreSQL contient 4 tables :
@@ -204,5 +212,3 @@ Le schema PostgreSQL contient 4 tables :
 - **cards** — Cartes professionnelles (nom, prenoms, poste, qr_path, scan_count)
 - **sessions** — Sessions de formation/reunion (nom, code_unique, date)
 - **presences** — Presences marquees par agent (session_id, utilisateur_id, agent_nom)
-
-La fonction `increment_card_scan(card_id)` est geree par le backend directement.

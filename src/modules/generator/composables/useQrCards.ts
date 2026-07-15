@@ -4,8 +4,10 @@ import {
   slugify,
   DEFAULT_CARD_DESIGN
 } from '@modules/generator/services/qrCard.service'
-import { uploadCard, uploadQr } from '@modules/generator/services/cardStorage.service'
-import { insertCardRecord } from '@modules/admin/services/cardAdmin.service'
+import {
+  uploadCardToLocal,
+  buildCardViewUrl
+} from '@modules/generator/services/localCardStorage.service'
 import { extractCardFields } from '@modules/generator/services/cardOcr.service'
 import { downloadQRCode } from '@modules/generator/services/qrGenerator.service'
 import { handleError } from '@core/errors/errorHandler'
@@ -36,6 +38,38 @@ function readFileAsDataUrl(file: File): Promise<string> {
       resolve(typeof reader.result === 'string' ? reader.result : '')
     reader.onerror = () => reject(new Error('Lecture du fichier impossible'))
     reader.readAsDataURL(file)
+  })
+}
+
+const MAX_WIDTH = 1200
+const MAX_HEIGHT = 1200
+const JPEG_QUALITY = 0.7
+
+async function compressImage(file: File): Promise<string> {
+  if (!file.type.startsWith('image/')) {
+    return readFileAsDataUrl(file)
+  }
+  const dataUrl = await readFileAsDataUrl(file)
+  return new Promise<string>((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      let w = img.width
+      let h = img.height
+      if (w > MAX_WIDTH || h > MAX_HEIGHT) {
+        const ratio = Math.min(MAX_WIDTH / w, MAX_HEIGHT / h)
+        w = Math.round(w * ratio)
+        h = Math.round(h * ratio)
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = w
+      canvas.height = h
+      const ctx = canvas.getContext('2d')
+      if (!ctx) { resolve(dataUrl); return }
+      ctx.drawImage(img, 0, 0, w, h)
+      resolve(canvas.toDataURL('image/jpeg', JPEG_QUALITY))
+    }
+    img.onerror = () => resolve(dataUrl)
+    img.src = dataUrl
   })
 }
 
@@ -75,7 +109,7 @@ export function useQrCards() {
     if (!file.type.startsWith('image/')) {
       throw new Error('Le logo doit être une image')
     }
-    setLogo(id, await readFileAsDataUrl(file))
+    setLogo(id, await compressImage(file))
   }
 
   /** Ajoute une ou plusieurs images (que le QR affichera via l'URL). */
@@ -87,7 +121,7 @@ export function useQrCards() {
       const image: CardImage = {
         id: crypto.randomUUID(),
         name: file.name,
-        dataUrl: await readFileAsDataUrl(file)
+        dataUrl: await compressImage(file)
       }
       person.images.push(image)
     }
@@ -126,9 +160,8 @@ export function useQrCards() {
   }
 
   /**
-   * Pour chaque personne prête : téléverse ses images vers Supabase, récupère
-   * l'URL de la page d'affichage, puis génère le QR (avec logo) qui pointe
-   * vers cette URL. Une erreur sur une personne n'arrête pas les autres.
+   * Pour chaque personne prête : sauvegarde les images en local (IndexedDB),
+   * génère le QR (avec logo) qui pointe vers la page d'affichage locale.
    */
   async function generate(): Promise<void> {
     errorMessage.value = null
@@ -145,6 +178,10 @@ export function useQrCards() {
       generated.value = await Promise.all(
         ready.map((person) => generateOne(person))
       )
+    } catch (error) {
+      const appError = handleError(error, 'useQrCards.generate')
+      errorMessage.value = appError.message
+      generated.value = []
     } finally {
       isGenerating.value = false
     }
@@ -158,17 +195,18 @@ export function useQrCards() {
       poste: person.poste
     }
     try {
-      const viewUrl = await uploadCard(person)
-      const qr = await generateQRCodeWithLogo(viewUrl, { ...design }, person.logo)
-      const qrPath = await uploadQr(person.id, qr)
-      await insertCardRecord({
-        id: person.id,
+      const imageDataUrls = person.images.map((img) => img.dataUrl)
+      const cardId = await uploadCardToLocal(person.id, {
         nom: person.nom,
         prenoms: person.prenoms,
         poste: person.poste,
-        qr_path: qrPath,
-        view_url: viewUrl
-      })
+        images: imageDataUrls,
+        createdAt: new Date().toISOString()
+      }, imageDataUrls)
+
+      const viewUrl = buildCardViewUrl(cardId)
+      const qr = await generateQRCodeWithLogo(viewUrl, { ...design }, person.logo)
+
       log.qrGenerated(viewUrl, design.size)
       return { ...base, viewUrl, qr, error: null }
     } catch (error) {

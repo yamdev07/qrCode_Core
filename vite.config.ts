@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath } from 'node:url'
+import { readFileSync } from 'node:fs'
 
 export default defineConfig({
   plugins: [
@@ -53,7 +54,18 @@ export default defineConfig({
     }
   },
   server: {
-    port: 3000
-    // https: true // Passe à true si tu testes la caméra en local
+    host: '0.0.0.0',
+    port: 3000,
+    https: {
+      key: readFileSync('./key.pem'),
+      cert: readFileSync('./cert.pem')
+    },
+    proxy: {
+      '/qrCode_Core/api': {
+        target: 'http://127.0.0.1:80',
+        changeOrigin: true,
+        timeout: 120000
+      }
+    }
   }
 })

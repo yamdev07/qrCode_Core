@@ -3,6 +3,26 @@
 --  À exécuter dans Supabase → SQL Editor → New query → Run.
 -- =====================================================================
 
+-- 0) Bucket de stockage "cartes" ---------------------------------------
+-- Crée le bucket s'il n'existe pas encore.
+insert into storage.buckets (id, name, public)
+values ('cartes', 'cartes', true)
+on conflict (id) do nothing;
+
+-- Policies de stockage pour le bucket "cartes"
+drop policy if exists "cartes_insert_anon" on storage.objects;
+create policy "cartes_insert_anon" on storage.objects
+  for insert to anon, authenticated with check (bucket_id = 'cartes');
+
+drop policy if exists "cartes_update_anon" on storage.objects;
+create policy "cartes_update_anon" on storage.objects
+  for update to anon, authenticated
+  using (bucket_id = 'cartes') with check (bucket_id = 'cartes');
+
+drop policy if exists "cartes_read_public" on storage.objects;
+create policy "cartes_read_public" on storage.objects
+  for select to anon using (bucket_id = 'cartes');
+
 -- 1) Table des cartes ---------------------------------------------------
 create table if not exists public.cards (
   id          uuid primary key,
@@ -21,7 +41,7 @@ alter table public.cards enable row level security;
 -- Insertion : depuis le navigateur avec la clé anon (lors de la génération).
 drop policy if exists "cards_insert_anon" on public.cards;
 create policy "cards_insert_anon"
-  on public.cards for insert to anon, authenticated
+  on public.cards for insert to anon, authenticated 
   with check (true);
 
 -- Lecture : réservée aux administrateurs connectés (tableau d'admin).

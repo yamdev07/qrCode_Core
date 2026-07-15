@@ -9,7 +9,7 @@ vi.mock('@core/logger/logger', () => ({
   }
 }))
 
-// On évite tout appel réseau Supabase : l'upload retourne une fausse URL.
+// On evite tout appel reseau : l'upload retourne une fausse URL.
 vi.mock('@modules/generator/services/cardStorage.service', () => ({
   uploadCard: vi.fn(async (person: { id: string }) => `https://app.test/carte/${person.id}`),
   uploadQr: vi.fn(async (id: string) => `${id}/qr.png`),

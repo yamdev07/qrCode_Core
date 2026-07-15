@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue'
-import { authLogin, authGetSession, authLogout } from '@core/database/supabaseClient'
+import { authLogin, authGetSession, authLogout } from '@core/database/databaseClient'
 import { log } from '@core/logger/logger'
 
 type AuthSession = {

@@ -1,4 +1,4 @@
-import { cardsList, cardsInsert, cardsIncrementScan } from '@core/database/supabaseClient'
+import { cardsList, cardsInsert, cardsIncrementScan } from '@core/database/databaseClient'
 import { ApiError } from '@core/errors/AppError'
 import { log } from '@core/logger/logger'
 import type { CardRecord } from '@modules/generator/types/cards.types'

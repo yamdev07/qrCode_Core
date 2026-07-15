@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useAuth } from '../composables/useAuth'
-import { authLogin, authLogout } from '@core/database/supabaseClient'
+import { authLogin, authLogout } from '@core/database/databaseClient'
 
 vi.mock('@core/logger/logger', () => ({
   log: { info: vi.fn(), error: vi.fn(), debug: vi.fn() }
 }))
 
-vi.mock('@core/database/supabaseClient', () => ({
+vi.mock('@core/database/databaseClient', () => ({
   authLogin: vi.fn(),
   authGetSession: vi.fn().mockResolvedValue({ session: null }),
   authLogout: vi.fn().mockResolvedValue({})

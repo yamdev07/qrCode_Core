@@ -5,7 +5,7 @@ import {
   sessionsGetByCode,
   sessionsUpdate,
   sessionsDelete
-} from '@core/database/supabaseClient'
+} from '@core/database/databaseClient'
 import type { Session, SessionFormData, SessionWithPresenceCount } from '@modules/sessions/types/session.types'
 import { sessionSchema } from '@core/utils/validators'
 import { ValidationError, NotFoundError, ApiError } from '@core/errors/AppError'

@@ -126,7 +126,7 @@ export function useQrCards() {
   }
 
   /**
-   * Pour chaque personne prête : téléverse ses images vers Supabase, récupère
+   * Pour chaque personne prete : televerse ses images vers le backend local, recuperes
    * l'URL de la page d'affichage, puis génère le QR (avec logo) qui pointe
    * vers cette URL. Une erreur sur une personne n'arrête pas les autres.
    */

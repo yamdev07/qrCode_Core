@@ -1,4 +1,4 @@
-import { storageUpload, storageGetPublicUrl, storageDownload } from '@core/database/supabaseClient'
+import { storageUpload, storageGetPublicUrl, storageDownload } from '@core/database/databaseClient'
 import { ApiError, NotFoundError } from '@core/errors/AppError'
 import { log } from '@core/logger/logger'
 import { slugify } from '@modules/generator/services/qrCard.service'

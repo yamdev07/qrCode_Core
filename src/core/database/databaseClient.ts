@@ -1,5 +1,3 @@
-// src/core/database/supabaseClient.ts
-// Replaced: was Supabase JS client. Now wraps the local backend API.
 import { apiGet, apiPost, apiPut, apiDelete } from '@core/api/apiClient'
 import { log } from '@core/logger/logger'
 

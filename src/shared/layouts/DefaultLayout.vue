@@ -83,7 +83,7 @@ function closeSidebar(): void {
           <span class="foot-emoji">⚡</span>
           <div>
             <strong>PWA prête</strong>
-            <small>Vue 3 · Supabase</small>
+            <small>Vue 3 · Backend local</small>
           </div>
         </div>
       </div>

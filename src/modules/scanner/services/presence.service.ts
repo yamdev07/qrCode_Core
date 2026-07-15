@@ -3,7 +3,7 @@ import {
   presencesListBySession,
   presencesVerify,
   presencesVerifyAgent
-} from '@core/database/supabaseClient'
+} from '@core/database/databaseClient'
 import type { PresenceData, PresenceConfirmation } from '@modules/scanner/types/scanner.types'
 import { z } from 'zod'
 import { ValidationError, ApiError } from '@core/errors/AppError'

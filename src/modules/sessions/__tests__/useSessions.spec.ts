@@ -1,17 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useSessions } from '@modules/sessions/composables/useSessions'
 
-vi.mock('@core/database/supabaseClient', () => ({
-  supabase: {
-    from: vi.fn().mockReturnThis(),
-    select: vi.fn().mockReturnThis(),
-    insert: vi.fn().mockReturnThis(),
-    update: vi.fn().mockReturnThis(),
-    delete: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    order: vi.fn().mockReturnThis(),
-    single: vi.fn().mockResolvedValue({ data: null, error: null })
-  }
+vi.mock('@core/database/databaseClient', () => ({
+  sessionsList: vi.fn().mockResolvedValue([]),
+  sessionsCreate: vi.fn(),
+  sessionsGetById: vi.fn(),
+  sessionsGetByCode: vi.fn(),
+  sessionsUpdate: vi.fn(),
+  sessionsDelete: vi.fn()
 }))
 
 describe('useSessions', () => {
@@ -22,7 +18,7 @@ describe('useSessions', () => {
     vi.clearAllMocks()
   })
 
-  it('devrait initialiser avec des valeurs par défaut', () => {
+  it('devrait initialiser avec des valeurs par defaut', () => {
     expect(sessionsHook.sessions.value).toEqual([])
     expect(sessionsHook.isLoading.value).toBe(false)
     expect(sessionsHook.error.value).toBeNull()
@@ -37,7 +33,7 @@ describe('useSessions', () => {
         created_by: null, created_at: '', updated_at: '', presence_count: 0
       },
       {
-        id: '2', nom: 'Passée', code_unique: 'DEF',
+        id: '2', nom: 'Passee', code_unique: 'DEF',
         date: new Date(Date.now() - 86400000).toISOString(),
         created_by: null, created_at: '', updated_at: '', presence_count: 5
       }

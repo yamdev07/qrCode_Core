@@ -1,6 +1,0 @@
-RewriteEngine On
-
-# Allow access to PHP files
-<FilesMatch "\.(php)$">
-    Require all granted
-</FilesMatch>

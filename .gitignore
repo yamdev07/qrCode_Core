@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 cert.pem
 key.pem
+
+# Uploaded files (cards, QR codes)
+server/uploads/

@@ -20,7 +20,7 @@ export const routes: RouteRecordRaw[] = [
     meta: { title: 'Cartes QR en lot' }
   },
   {
-    path: '/carte/:id',
+    path: '/carte/:slug',
     name: 'card-view',
     component: () => import('@/views/CardViewerView.vue'),
     meta: { title: 'Carte' }

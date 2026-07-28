@@ -11,9 +11,9 @@ const isLoading = ref(true)
 const errorMessage = ref<string | null>(null)
 
 onMounted(async () => {
-  const id = String(route.params.id)
+  const slug = String(route.params.slug)
   try {
-    data.value = await getCardDataFromServer(id)
+    data.value = await getCardDataFromServer(slug)
   } catch (error) {
     errorMessage.value = handleError(error, 'CardViewerView').message
   } finally {

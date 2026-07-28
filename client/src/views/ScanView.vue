@@ -14,7 +14,8 @@ const showConfirmation = ref(false)
 const currentScanResult = ref<ScanResult | null>(null)
 const scanError = ref<string | null>(null)
 
-const lookupName = ref('')
+const nom = ref('')
+const prenoms = ref('')
 const lookupError = ref<string | null>(null)
 const isLooking = ref(false)
 
@@ -52,10 +53,17 @@ function handleCancel(): void {
   reset()
 }
 
+function buildSlug(): string {
+  const n = nom.value.trim().toLowerCase()
+  const p = prenoms.value.trim().toLowerCase()
+  if (!n) return ''
+  return p ? `${n}-${p}` : n
+}
+
 async function handleLookup(): Promise<void> {
-  const slug = lookupName.value.trim().toLowerCase()
+  const slug = buildSlug()
   if (!slug) {
-    lookupError.value = 'Veuillez saisir votre nom.'
+    lookupError.value = 'Veuillez saisir au moins votre nom.'
     return
   }
 
@@ -66,7 +74,7 @@ async function handleLookup(): Promise<void> {
     await getCardDataFromServer(slug)
     router.push(`/carte/${slug}`)
   } catch {
-    lookupError.value = `Aucune carte trouvée pour "${slug}". Format attendu : prenom-nom`
+    lookupError.value = `Aucune carte trouvée pour "${slug}".`
   } finally {
     isLooking.value = false
   }
@@ -77,28 +85,47 @@ async function handleLookup(): Promise<void> {
   <div class="scan-view">
     <h2 class="view-title">🔍 Accéder à ma carte</h2>
     <p class="view-subtitle">
-      Saisissez votre <strong>prenom-nom</strong> pour afficher votre carte professionnelle.<br/>
-      <span class="hint">Exemple : <code>lionel-sisso</code></span>
+      Saisissez votre <strong>nom</strong> et <strong>prénom(s)</strong> pour afficher votre carte.
     </p>
 
     <form class="lookup-form" @submit.prevent="handleLookup">
-      <div class="input-group">
-        <input
-          v-model="lookupName"
-          type="text"
-          class="lookup-input"
-          placeholder="prenom-nom"
-          autocomplete="off"
-          :disabled="isLooking"
-        />
-        <button
-          type="submit"
-          class="lookup-btn"
-          :disabled="isLooking || !lookupName.trim()"
-        >
-          {{ isLooking ? '...' : 'Rechercher' }}
-        </button>
+      <div class="fields">
+        <div class="field">
+          <label class="field-label">Nom <span class="required">*</span></label>
+          <input
+            v-model="nom"
+            type="text"
+            class="field-input"
+            placeholder="Ex: sisso"
+            autocomplete="family-name"
+            :disabled="isLooking"
+          />
+        </div>
+        <div class="field">
+          <label class="field-label">Prénom(s)</label>
+          <input
+            v-model="prenoms"
+            type="text"
+            class="field-input"
+            placeholder="Ex: lionel"
+            autocomplete="given-name"
+            :disabled="isLooking"
+          />
+        </div>
       </div>
+
+      <p class="slug-preview" v-if="buildSlug()">
+        Lien : <code>/carte/{{ buildSlug() }}</code>
+      </p>
+
+      <button
+        type="submit"
+        class="lookup-btn"
+        :disabled="isLooking || !nom.trim()"
+      >
+        {{ isLooking ? 'Recherche...' : 'Rechercher' }}
+      </button>
+
       <p v-if="lookupError" class="lookup-error">{{ lookupError }}</p>
     </form>
 
@@ -127,6 +154,7 @@ async function handleLookup(): Promise<void> {
 .scan-view {
   max-width: 560px;
   margin: 0 auto;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -134,7 +162,7 @@ async function handleLookup(): Promise<void> {
 
 .view-title {
   text-align: center;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   color: #1e293b;
   margin: 0;
 }
@@ -147,36 +175,43 @@ async function handleLookup(): Promise<void> {
   line-height: 1.5;
 }
 
-.hint {
-  font-size: 0.8rem;
-  color: #94a3b8;
-}
-
-.hint code {
-  background: #f1f5f9;
-  padding: 0.15rem 0.4rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  color: #6366f1;
-}
-
 .lookup-form {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 16px;
-  padding: 1.5rem;
+  padding: 1.25rem;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
-}
-
-.input-group {
   display: flex;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.lookup-input {
-  flex: 1;
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.field-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.required {
+  color: #ef4444;
+}
+
+.field-input {
+  width: 100%;
   padding: 0.75rem 1rem;
   border: 2px solid #e2e8f0;
   border-radius: 12px;
@@ -185,26 +220,42 @@ async function handleLookup(): Promise<void> {
   background: #fff;
   outline: none;
   transition: border-color 0.2s;
+  box-sizing: border-box;
 }
 
-.lookup-input:focus {
+.field-input:focus {
   border-color: #6366f1;
 }
 
-.lookup-input::placeholder {
+.field-input::placeholder {
   color: #94a3b8;
 }
 
+.slug-preview {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin: 0;
+  text-align: center;
+}
+
+.slug-preview code {
+  background: #f1f5f9;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  color: #6366f1;
+}
+
 .lookup-btn {
-  padding: 0.75rem 1.5rem;
+  width: 100%;
+  padding: 0.85rem;
   border: none;
   border-radius: 12px;
   background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
   color: #fff;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 1rem;
   cursor: pointer;
-  white-space: nowrap;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -221,7 +272,7 @@ async function handleLookup(): Promise<void> {
 .lookup-error {
   color: #dc2626;
   font-size: 0.85rem;
-  margin: 0.75rem 0 0;
+  margin: 0;
   text-align: center;
 }
 
@@ -239,5 +290,15 @@ async function handleLookup(): Promise<void> {
   flex: 1;
   height: 1px;
   background: #e2e8f0;
+}
+
+@media (min-width: 480px) {
+  .fields {
+    flex-direction: row;
+  }
+
+  .field {
+    flex: 1;
+  }
 }
 </style>

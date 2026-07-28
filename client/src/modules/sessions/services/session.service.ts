@@ -69,6 +69,6 @@ export async function deleteSession(id: string): Promise<void> {
 }
 
 export async function getSessionQRUrl(session: Session): Promise<string> {
-  const baseUrl = window.location.origin
+  const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin
   return `${baseUrl}/presence/${session.code_unique}`
 }

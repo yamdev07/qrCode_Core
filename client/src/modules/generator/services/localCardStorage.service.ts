@@ -72,5 +72,6 @@ export async function deleteCardFromServer(cardId: string): Promise<void> {
 
 /** URL de la page d'affichage de la carte (accessible depuis le téléphone). */
 export function buildCardViewUrl(cardId: string): string {
-  return `${window.location.origin}/carte/${cardId}`
+  const appUrl = import.meta.env.VITE_APP_URL || window.location.origin
+  return `${appUrl}/carte/${cardId}`
 }

@@ -25,5 +25,10 @@ dist-ssr
 cert.pem
 key.pem
 
+# Environment files (contains secrets, never commit)
+.env
+.env.local
+.env.*.local
+
 # Uploaded files (cards, QR codes)
 server/uploads/

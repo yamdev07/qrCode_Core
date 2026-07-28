@@ -2,7 +2,6 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath } from 'node:url'
-import { readFileSync } from 'node:fs'
 
 export default defineConfig({
   plugins: [
@@ -47,10 +46,6 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 3000,
-    https: {
-      key: readFileSync('./key.pem'),
-      cert: readFileSync('./cert.pem')
-    },
     proxy: {
       '/api': {
         target: 'http://localhost:3001',

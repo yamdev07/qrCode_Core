@@ -2,7 +2,7 @@ import { Router } from 'express'
 import crypto from 'node:crypto'
 import { mkdirSync, writeFileSync, existsSync, readdirSync, unlinkSync, rmdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import pool from '../db.js'
+import db from '../db.js'
 
 const router = Router()
 const UPLOADS_DIR = resolve(import.meta.dirname, '..', '..', 'uploads', 'cards')
@@ -22,8 +22,8 @@ router.post('/upload', async (req, res) => {
     const cardDir = join(UPLOADS_DIR, cardId)
     ensureDir(cardDir)
 
-    await pool.query(
-      'INSERT INTO cards (id, nom, prenoms, poste) VALUES ($1, $2, $3, $4)',
+    await db.query(
+      'INSERT INTO cards (id, nom, prenoms, poste) VALUES (?, ?, ?, ?)',
       [cardId, nom, prenoms || '', poste || '']
     )
 
@@ -39,8 +39,8 @@ router.post('/upload', async (req, res) => {
       writeFileSync(join(cardDir, filename), imageBuffer)
 
       const imagePath = `cards/${cardId}/${filename}`
-      await pool.query(
-        'INSERT INTO cards_images (card_id, image_path, mime_type, image_order) VALUES ($1, $2, $3, $4)',
+      await db.query(
+        'INSERT INTO cards_images (card_id, image_path, mime_type, image_order) VALUES (?, ?, ?, ?)',
         [cardId, imagePath, `image/${ext}`, i + 1]
       )
     }
@@ -59,14 +59,14 @@ router.get('/card', async (req, res) => {
       return res.status(400).json({ error: 'ID invalide' })
     }
 
-    const cardResult = await pool.query('SELECT * FROM cards WHERE id = $1', [id])
+    const cardResult = await db.query('SELECT * FROM cards WHERE id = ?', [id])
     if (cardResult.rows.length === 0) {
       return res.status(404).json({ error: 'Carte introuvable' })
     }
 
     const card = cardResult.rows[0]
-    const imagesResult = await pool.query(
-      'SELECT image_path, mime_type FROM cards_images WHERE card_id = $1 ORDER BY image_order',
+    const imagesResult = await db.query(
+      'SELECT image_path, mime_type FROM cards_images WHERE card_id = ? ORDER BY image_order',
       [id]
     )
 
@@ -84,8 +84,8 @@ router.get('/card', async (req, res) => {
 
 router.get('/cards-list', async (_req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT id AS "cardId", nom, prenoms, poste, created_at AS "createdAt" FROM cards ORDER BY created_at DESC'
+    const result = await db.query(
+      'SELECT id AS cardId, nom, prenoms, poste, created_at AS createdAt FROM cards ORDER BY created_at DESC'
     )
     res.json(result.rows)
   } catch (err) {
@@ -97,8 +97,8 @@ router.get('/cards-list', async (_req, res) => {
 router.delete('/card/delete/:cardId', async (req, res) => {
   try {
     const { cardId } = req.params
-    const result = await pool.query('DELETE FROM cards WHERE id = $1 RETURNING id', [cardId])
-    if (result.rows.length === 0) {
+    const result = await db.query('DELETE FROM cards WHERE id = ?', [cardId])
+    if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Carte introuvable' })
     }
 

@@ -1,14 +1,14 @@
 import { Router } from 'express'
 import crypto from 'node:crypto'
-import pool from '../db.js'
+import db from '../db.js'
 
 const router = Router()
 
 router.get('/', async (_req, res) => {
   try {
-    const result = await pool.query(`
+    const result = await db.query(`
       SELECT s.*,
-        (SELECT COUNT(*)::int FROM presences p WHERE p.session_id = s.id) AS presence_count
+        (SELECT COUNT(*) FROM presences p WHERE p.session_id = s.id) AS presence_count
       FROM sessions s
       ORDER BY s.date DESC
     `)
@@ -28,13 +28,15 @@ router.post('/', async (req, res) => {
     const now = new Date().toISOString()
     const code = code_unique || crypto.randomBytes(4).toString('hex').toUpperCase()
 
-    const result = await pool.query(
-      `INSERT INTO sessions (id, nom, code_unique, date, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [id, nom, code, date || now, now, now]
+    // date est un champ texte fourni par le client ; created_at / updated_at
+    // sont remplis par le DEFAULT CURRENT_TIMESTAMP(6) de la table.
+    await db.query(
+      'INSERT INTO sessions (id, nom, code_unique, date) VALUES (?, ?, ?, ?)',
+      [id, nom, code, date || now]
     )
 
-    res.json(result.rows[0])
+    const created = await db.query('SELECT * FROM sessions WHERE id = ?', [id])
+    res.json(created.rows[0])
   } catch (err) {
     console.error('Erreur create session:', err)
     res.status(500).json({ error: err.message })
@@ -46,7 +48,7 @@ router.get('/lookup', async (req, res) => {
     const { code } = req.query
     if (!code) return res.status(400).json({ error: 'Code requis' })
 
-    const result = await pool.query('SELECT * FROM sessions WHERE code_unique = $1', [code])
+    const result = await db.query('SELECT * FROM sessions WHERE code_unique = ?', [code])
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Session introuvable' })
     }
@@ -60,7 +62,7 @@ router.get('/lookup', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params
-    const result = await pool.query('SELECT * FROM sessions WHERE id = $1', [id])
+    const result = await db.query('SELECT * FROM sessions WHERE id = ?', [id])
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Session introuvable' })
     }
@@ -74,27 +76,26 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params
-    const existing = await pool.query('SELECT * FROM sessions WHERE id = $1', [id])
+    const existing = await db.query('SELECT * FROM sessions WHERE id = ?', [id])
     if (existing.rows.length === 0) {
       return res.status(404).json({ error: 'Session introuvable' })
     }
 
     const { nom, code_unique, date } = req.body
-    const now = new Date().toISOString()
 
-    const result = await pool.query(
-      `UPDATE sessions SET nom = $1, code_unique = $2, date = $3, updated_at = $4
-       WHERE id = $5 RETURNING *`,
+    await db.query(
+      `UPDATE sessions SET nom = ?, code_unique = ?, date = ?, updated_at = CURRENT_TIMESTAMP(6)
+       WHERE id = ?`,
       [
         nom || existing.rows[0].nom,
         code_unique || existing.rows[0].code_unique,
         date || existing.rows[0].date,
-        now,
         id
       ]
     )
 
-    res.json(result.rows[0])
+    const updated = await db.query('SELECT * FROM sessions WHERE id = ?', [id])
+    res.json(updated.rows[0])
   } catch (err) {
     console.error('Erreur update session:', err)
     res.status(500).json({ error: err.message })
@@ -104,8 +105,8 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params
-    const result = await pool.query('DELETE FROM sessions WHERE id = $1 RETURNING id', [id])
-    if (result.rows.length === 0) {
+    const result = await db.query('DELETE FROM sessions WHERE id = ?', [id])
+    if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Session introuvable' })
     }
     res.json({ success: true })

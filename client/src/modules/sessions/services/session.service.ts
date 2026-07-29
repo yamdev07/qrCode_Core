@@ -1,5 +1,6 @@
 import { ApiError, NotFoundError } from '@core/errors/AppError'
 import { log } from '@core/logger/logger'
+import { publicUrl } from '@core/config/appConfig'
 import type { Session, SessionFormData, SessionWithPresenceCount } from '@modules/sessions/types/session.types'
 
 const API = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api'
@@ -69,6 +70,5 @@ export async function deleteSession(id: string): Promise<void> {
 }
 
 export async function getSessionQRUrl(session: Session): Promise<string> {
-  const baseUrl = window.location.origin
-  return `${baseUrl}/presence/${session.code_unique}`
+  return publicUrl(`presence/${session.code_unique}`)
 }

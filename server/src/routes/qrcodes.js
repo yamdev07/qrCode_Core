@@ -2,10 +2,13 @@ import { Router } from 'express'
 import crypto from 'node:crypto'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import pool from '../db.js'
+import db from '../db.js'
 
 const router = Router()
 const UPLOADS_DIR = resolve(import.meta.dirname, '..', '..', 'uploads', 'qrcodes')
+
+const QR_COLUMNS =
+  'id, url, image_path, mime_type, format, size, margin, foreground, background, error_correction_level, created_at'
 
 function ensureDir(dir) {
   mkdirSync(dir, { recursive: true })
@@ -32,13 +35,14 @@ router.post('/', async (req, res) => {
 
     const imagePath = `qrcodes/${filename}`
 
-    const result = await pool.query(
+    await db.query(
       `INSERT INTO qr_codes (id, url, image_path, mime_type, format, size, margin, foreground, background, error_correction_level)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id, url, image_path, mime_type, format, size, margin, foreground, background, error_correction_level, created_at`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [id, url, imagePath, mime, format || 'png', size || 300, margin || 2, foreground || '#000000', background || '#FFFFFF', errorCorrectionLevel || 'M']
     )
 
-    res.json(result.rows[0])
+    const created = await db.query(`SELECT ${QR_COLUMNS} FROM qr_codes WHERE id = ?`, [id])
+    res.json(created.rows[0])
   } catch (err) {
     console.error('Erreur save qrcode:', err)
     res.status(500).json({ error: err.message })
@@ -47,8 +51,8 @@ router.post('/', async (req, res) => {
 
 router.get('/', async (_req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT id, url, image_path, mime_type, format, size, margin, foreground, background, error_correction_level, created_at FROM qr_codes ORDER BY created_at DESC'
+    const result = await db.query(
+      `SELECT ${QR_COLUMNS} FROM qr_codes ORDER BY created_at DESC`
     )
     res.json(result.rows)
   } catch (err) {
@@ -61,8 +65,8 @@ router.get('/by-url', async (req, res) => {
   try {
     const { url } = req.query
     if (!url) return res.status(400).json({ error: 'url requise' })
-    const result = await pool.query(
-      'SELECT id, url, image_path, mime_type, format, size, created_at FROM qr_codes WHERE url = $1 ORDER BY created_at DESC LIMIT 1',
+    const result = await db.query(
+      'SELECT id, url, image_path, mime_type, format, size, created_at FROM qr_codes WHERE url = ? ORDER BY created_at DESC LIMIT 1',
       [url]
     )
     if (result.rows.length === 0) return res.json(null)
@@ -76,7 +80,7 @@ router.get('/by-url', async (req, res) => {
 router.get('/:id/image', async (req, res) => {
   try {
     const { id } = req.params
-    const result = await pool.query('SELECT image_path, mime_type FROM qr_codes WHERE id = $1', [id])
+    const result = await db.query('SELECT image_path, mime_type FROM qr_codes WHERE id = ?', [id])
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'QR code introuvable' })
     }
@@ -91,8 +95,8 @@ router.get('/:id/image', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params
-    const result = await pool.query(
-      'SELECT id, url, image_path, mime_type, format, size, margin, foreground, background, error_correction_level, created_at FROM qr_codes WHERE id = $1',
+    const result = await db.query(
+      `SELECT ${QR_COLUMNS} FROM qr_codes WHERE id = ?`,
       [id]
     )
     if (result.rows.length === 0) {
@@ -108,8 +112,8 @@ router.get('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params
-    const result = await pool.query('DELETE FROM qr_codes WHERE id = $1 RETURNING id', [id])
-    if (result.rows.length === 0) {
+    const result = await db.query('DELETE FROM qr_codes WHERE id = ?', [id])
+    if (result.rowCount === 0) {
       return res.status(404).json({ error: 'QR code introuvable' })
     }
     res.json({ success: true })

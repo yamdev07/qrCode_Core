@@ -2,7 +2,18 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath } from 'node:url'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
+
+/**
+ * HTTPS local uniquement : l'accès caméra (scanner) exige un contexte sécurisé.
+ * Les certificats sont hors dépôt, donc absents en CI et sur le serveur — on ne
+ * les lit que s'ils sont là, sinon `vite build` échouerait au chargement de la
+ * config, avant même de compiler quoi que ce soit.
+ */
+function devHttps() {
+  if (!existsSync('./key.pem') || !existsSync('./cert.pem')) return undefined
+  return { key: readFileSync('./key.pem'), cert: readFileSync('./cert.pem') }
+}
 
 export default defineConfig({
   plugins: [
@@ -47,10 +58,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 3000,
-    https: {
-      key: readFileSync('./key.pem'),
-      cert: readFileSync('./cert.pem')
-    },
+    https: devHttps(),
     proxy: {
       '/api': {
         target: 'http://localhost:3001',

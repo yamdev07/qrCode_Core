@@ -1,4 +1,5 @@
 import { log } from '@core/logger/logger'
+import { publicUrl } from '@core/config/appConfig'
 import type { CardMeta, CardViewData } from '@modules/generator/types/cards.types'
 
 const API_BASE = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api'
@@ -70,7 +71,7 @@ export async function deleteCardFromServer(cardId: string): Promise<void> {
   await fetch(`${API_BASE}/card/delete/${cardId}`, { method: 'DELETE' })
 }
 
-/** URL de la page d'affichage de la carte (accessible depuis le téléphone). */
+/** URL publique de la page d'affichage de la carte (encodée dans le QR code). */
 export function buildCardViewUrl(cardId: string): string {
-  return `${window.location.origin}/carte/${cardId}`
+  return publicUrl(`carte/${cardId}`)
 }

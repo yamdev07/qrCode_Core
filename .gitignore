@@ -24,3 +24,12 @@ dist-ssr
 *.sw?
 cert.pem
 key.pem
+
+# Artefacts de deploiement (build, node_modules copies, donnees personnelles)
+server/public
+server/seed-data.json
+server/uploads/
+deploy/
+
+# Reglages locaux Claude Code (permissions specifiques a la machine)
+.claude/

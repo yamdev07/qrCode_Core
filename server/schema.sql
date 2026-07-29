@@ -2,6 +2,7 @@
 
 CREATE TABLE IF NOT EXISTS cards (
   id TEXT PRIMARY KEY,
+  slug TEXT UNIQUE NOT NULL,
   nom TEXT NOT NULL,
   prenoms TEXT DEFAULT '',
   poste TEXT DEFAULT '',

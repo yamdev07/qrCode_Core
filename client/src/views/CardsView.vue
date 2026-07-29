@@ -17,7 +17,7 @@ onMounted(() => {
     <p class="view-subtitle">
       Saisissez Nom, Prénoms et Poste, ajoutez les images à afficher et un logo
       par personne. À la validation, les images sont hébergées et chaque QR
-      pointe vers une page qui les affiche.
+      pointe vers <code>/carte/nom-prenoms</code>.
     </p>
 
     <CardBatchForm />

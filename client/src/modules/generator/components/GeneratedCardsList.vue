@@ -18,7 +18,7 @@ function handleRemove(cardId: string): void {
 
 async function retryGenerate(card: any): Promise<void> {
   try {
-    const viewUrl = card.viewUrl || buildCardViewUrl(card.id)
+    const viewUrl = card.viewUrl || buildCardViewUrl(card.slug || card.id)
     const stored = await findQrCodeByUrl(viewUrl)
     let qr: string
     if (stored?.image_path) {

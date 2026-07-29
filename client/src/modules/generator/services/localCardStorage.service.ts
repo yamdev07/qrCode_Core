@@ -3,12 +3,17 @@ import type { CardMeta, CardViewData } from '@modules/generator/types/cards.type
 
 const API_BASE = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api'
 
-/** Upload une carte via l'API et retourne l'ID. */
+export interface UploadResult {
+  id: string
+  slug: string
+}
+
+/** Upload une carte via l'API et retourne l'ID + slug. */
 export async function uploadCardToLocal(
   _cardId: string,
   meta: CardMeta,
   imageDataUrls: string[]
-): Promise<string> {
+): Promise<UploadResult> {
   let res: Response
   try {
     res = await fetch(`${API_BASE}/upload`, {
@@ -35,12 +40,12 @@ export async function uploadCardToLocal(
   const data = await res.json()
 
   log.info(`Carte sauvegardée sur le serveur: ${data.id}`)
-  return data.id
+  return { id: data.id, slug: data.slug }
 }
 
-/** Charge les données d'une carte depuis l'API. */
-export async function getCardDataFromServer(cardId: string): Promise<CardViewData> {
-  const res = await fetch(`${API_BASE}/card?id=${cardId}`)
+/** Charge les données d'une carte depuis l'API (par slug). */
+export async function getCardDataFromServer(slug: string): Promise<CardViewData> {
+  const res = await fetch(`${API_BASE}/card/${encodeURIComponent(slug)}`)
 
   if (!res.ok) {
     if (res.status === 404) throw new Error('Carte introuvable')
@@ -53,16 +58,11 @@ export async function getCardDataFromServer(cardId: string): Promise<CardViewDat
 
 /** Récupère la liste de toutes les cartes sur le serveur. */
 export async function getCardsList(): Promise<
-  { cardId: string; nom: string; prenoms: string; poste: string; createdAt: string }[]
+  { cardId: string; slug: string; nom: string; prenoms: string; poste: string; createdAt: string }[]
 > {
   const res = await fetch(`${API_BASE}/cards-list`)
   if (!res.ok) return []
   return res.json()
-}
-
-/** Récupère l'IP serveur courante. */
-export function getServerIp(): string {
-  return window.location.hostname
 }
 
 /** Supprime une carte du serveur. */
@@ -71,6 +71,7 @@ export async function deleteCardFromServer(cardId: string): Promise<void> {
 }
 
 /** URL de la page d'affichage de la carte (accessible depuis le téléphone). */
-export function buildCardViewUrl(cardId: string): string {
-  return `${window.location.origin}/carte/${cardId}`
+export function buildCardViewUrl(slug: string): string {
+  const appUrl = import.meta.env.VITE_APP_URL || window.location.origin
+  return `${appUrl}/carte/${slug}`
 }

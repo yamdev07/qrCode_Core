@@ -11,6 +11,29 @@ function ensureDir(dir) {
   mkdirSync(dir, { recursive: true })
 }
 
+function makeSlug(nom, prenoms) {
+  const raw = `${nom || ''}-${prenoms || ''}`
+  let slug = raw
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  if (!slug) slug = 'carte'
+  return slug
+}
+
+async function uniqueSlug(base) {
+  let slug = base
+  let counter = 1
+  while (true) {
+    const { rows } = await pool.query('SELECT 1 FROM cards WHERE slug = $1', [slug])
+    if (rows.length === 0) return slug
+    slug = `${base}-${counter}`
+    counter++
+  }
+}
+
 router.post('/upload', async (req, res) => {
   try {
     const { nom, prenoms, poste, images } = req.body
@@ -19,12 +42,13 @@ router.post('/upload', async (req, res) => {
     }
 
     const cardId = crypto.randomBytes(16).toString('hex')
+    const slug = await uniqueSlug(makeSlug(nom, prenoms))
     const cardDir = join(UPLOADS_DIR, cardId)
     ensureDir(cardDir)
 
     await pool.query(
-      'INSERT INTO cards (id, nom, prenoms, poste) VALUES ($1, $2, $3, $4)',
-      [cardId, nom, prenoms || '', poste || '']
+      'INSERT INTO cards (id, slug, nom, prenoms, poste) VALUES ($1, $2, $3, $4, $5)',
+      [cardId, slug, nom, prenoms || '', poste || '']
     )
 
     for (let i = 0; i < images.length; i++) {
@@ -45,7 +69,7 @@ router.post('/upload', async (req, res) => {
       )
     }
 
-    res.json({ id: cardId, viewUrl: `/carte/${cardId}` })
+    res.json({ id: cardId, slug, viewUrl: `/carte/${slug}` })
   } catch (err) {
     console.error('Erreur upload:', err)
     res.status(500).json({ error: err.message })
@@ -82,10 +106,40 @@ router.get('/card', async (req, res) => {
   }
 })
 
+router.get('/card/:slug', async (req, res) => {
+  try {
+    const { slug } = req.params
+    if (!slug) {
+      return res.status(400).json({ error: 'Slug invalide' })
+    }
+
+    const cardResult = await pool.query('SELECT * FROM cards WHERE slug = $1', [slug])
+    if (cardResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Carte introuvable' })
+    }
+
+    const card = cardResult.rows[0]
+    const imagesResult = await pool.query(
+      'SELECT image_path, mime_type FROM cards_images WHERE card_id = $1 ORDER BY image_order',
+      [card.id]
+    )
+
+    const imageUrls = imagesResult.rows.map(img => `/uploads/${img.image_path}`)
+
+    res.json({
+      meta: { nom: card.nom, prenoms: card.prenoms, poste: card.poste },
+      imageUrls
+    })
+  } catch (err) {
+    console.error('Erreur get card by slug:', err)
+    res.status(500).json({ error: err.message })
+  }
+})
+
 router.get('/cards-list', async (_req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id AS "cardId", nom, prenoms, poste, created_at AS "createdAt" FROM cards ORDER BY created_at DESC'
+      'SELECT id AS "cardId", slug, nom, prenoms, poste, created_at AS "createdAt" FROM cards ORDER BY created_at DESC'
     )
     res.json(result.rows)
   } catch (err) {
@@ -112,7 +166,7 @@ router.delete('/card/delete/:cardId', async (req, res) => {
 
     res.json({ success: true })
   } catch (err) {
-    console.error('Erreur delete card:', err)
+    console.error('Erreur delete cards:', err)
     res.status(500).json({ error: err.message })
   }
 })

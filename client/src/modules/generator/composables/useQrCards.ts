@@ -227,7 +227,7 @@ export function useQrCards() {
     }
     try {
       const imageDataUrls = person.images.map((img) => img.dataUrl)
-      const cardId = await uploadCardToLocal(person.id, {
+      const result = await uploadCardToLocal(person.id, {
         nom: person.nom,
         prenoms: person.prenoms,
         poste: person.poste,
@@ -235,7 +235,7 @@ export function useQrCards() {
         createdAt: new Date().toISOString()
       }, imageDataUrls)
 
-      const viewUrl = buildCardViewUrl(cardId)
+      const viewUrl = buildCardViewUrl(result.slug)
       const qr = await generateQRCodeWithLogo(viewUrl, { ...design }, person.logo)
 
       // Sauvegarder le QR code dans la base PostgreSQL
@@ -310,7 +310,7 @@ export function useQrCards() {
 
       for (const card of toRestore) {
         try {
-          const viewUrl = buildCardViewUrl(card.cardId)
+          const viewUrl = buildCardViewUrl(card.slug)
 
           // Chercher le QR stocké en base (avec logo inclus)
           const stored = await findQrCodeByUrl(viewUrl)
@@ -323,7 +323,7 @@ export function useQrCards() {
             results.push({ id: card.cardId, nom: card.nom, prenoms: card.prenoms, poste: card.poste, viewUrl, qr, error: null })
           }
         } catch {
-          results.push({ id: card.cardId, nom: card.nom, prenoms: card.prenoms, poste: card.poste, viewUrl: buildCardViewUrl(card.cardId), qr: null, error: 'QR non regénéré' })
+          results.push({ id: card.cardId, nom: card.nom, prenoms: card.prenoms, poste: card.poste, viewUrl, qr: null, error: 'QR non regénéré' })
         }
       }
 

@@ -14,7 +14,9 @@ export const DEFAULT_CARD_DESIGN: CardDesignOptions = {
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image()
-    img.crossOrigin = 'anonymous'
+    if (!src.startsWith('data:')) {
+      img.crossOrigin = 'anonymous'
+    }
     img.onload = () => resolve(img)
     img.onerror = () => reject(new Error('Image illisible'))
     img.src = src
@@ -91,8 +93,8 @@ export async function generateQRCodeWithLogo(
     const drawH = logoImg.height * ratio
     ctx.drawImage(logoImg, (size - drawW) / 2, (size - drawH) / 2, drawW, drawH)
   } catch (error) {
-    // Si le logo est illisible, on retourne le QR sans logo plutôt que d'échouer.
     log.error('Logo illisible, QR généré sans logo', error)
+    console.error('[QR] Logo load failed:', logo?.substring(0, 50), error)
     return qrDataUrl
   }
 

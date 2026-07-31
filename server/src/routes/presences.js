@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import crypto from 'node:crypto'
 import db from '../db.js'
+import { requireAuth } from '../auth.js'
 
 const router = Router()
 
@@ -34,7 +35,7 @@ router.post('/', async (req, res) => {
   }
 })
 
-router.get('/', async (req, res) => {
+router.get('/', requireAuth, async (req, res) => {
   try {
     const { session_id } = req.query
     if (!session_id) return res.status(400).json({ error: 'session_id requis' })

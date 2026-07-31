@@ -1,5 +1,6 @@
 import { log } from '@core/logger/logger'
 import { publicUrl } from '@core/config/appConfig'
+import { authFetch } from '@core/api/authFetch'
 import type { CardMeta, CardViewData } from '@modules/generator/types/cards.types'
 
 const API_BASE = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api'
@@ -12,7 +13,7 @@ export async function uploadCardToLocal(
 ): Promise<string> {
   let res: Response
   try {
-    res = await fetch(`${API_BASE}/upload`, {
+    res = await authFetch(`${API_BASE}/upload`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -56,7 +57,7 @@ export async function getCardDataFromServer(cardId: string): Promise<CardViewDat
 export async function getCardsList(): Promise<
   { cardId: string; nom: string; prenoms: string; poste: string; createdAt: string }[]
 > {
-  const res = await fetch(`${API_BASE}/cards-list`)
+  const res = await authFetch(`${API_BASE}/cards-list`)
   if (!res.ok) return []
   return res.json()
 }
@@ -68,7 +69,7 @@ export function getServerIp(): string {
 
 /** Supprime une carte du serveur. */
 export async function deleteCardFromServer(cardId: string): Promise<void> {
-  await fetch(`${API_BASE}/card/delete/${cardId}`, { method: 'DELETE' })
+  await authFetch(`${API_BASE}/card/delete/${cardId}`, { method: 'DELETE' })
 }
 
 /** URL publique de la page d'affichage de la carte (encodée dans le QR code). */

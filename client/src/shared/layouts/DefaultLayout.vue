@@ -1,32 +1,37 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useAuth } from '@modules/admin/composables/useAuth'
+import { useTheme } from '@core/composables/useTheme'
 
 const route = useRoute()
-const { isAuthenticated } = useAuth()
+const router = useRouter()
+const { isAuthenticated, signOut } = useAuth()
+const { toggle, isDarkNow } = useTheme()
 const isSidebarOpen = ref(false)
+const isDark = ref(isDarkNow())
 
-const baseNav = [
-  { path: '/', label: 'Accueil', icon: '🏠', desc: 'Tableau de bord' },
-  { path: '/generate', label: 'Générer', icon: '✨', desc: 'QR à partir d’un lien' },
-  { path: '/cards', label: 'Cartes', icon: '🎴', desc: 'Cartes pro & lots' },
-  { path: '/scan', label: 'Scanner', icon: '📷', desc: 'Lire un QR code' },
-  { path: '/sessions', label: 'Sessions', icon: '📋', desc: 'Présences' }
+// auth: true → visible seulement une fois connecté (fonctions de gestion).
+const allNav = [
+  { path: '/', label: 'Accueil', icon: '🏠', desc: 'Tableau de bord', auth: false },
+  { path: '/generate', label: 'Générer', icon: '✨', desc: 'QR à partir d’un lien', auth: true },
+  { path: '/cards', label: 'Cartes', icon: '🎴', desc: 'Cartes pro & lots', auth: true },
+  { path: '/recherche', label: 'Rechercher', icon: '🔎', desc: 'Trouver un QR par nom', auth: true },
+  { path: '/scan', label: 'Scanner', icon: '📷', desc: 'Lire un QR code', auth: false },
+  { path: '/sessions', label: 'Sessions', icon: '📋', desc: 'Présences', auth: true }
 ]
 
 const navItems = computed(() =>
-  isAuthenticated.value
-    ? [
-        ...baseNav,
-        { path: '/admin', label: 'Admin', icon: '📊', desc: 'Suivi des cartes' }
-      ]
-    : baseNav
+  allNav.filter((item) => !item.auth || isAuthenticated.value)
 )
 
-const pageTitle = computed(
-  () => (route.meta.title as string) || 'QR Pro'
-)
+const pageTitle = computed(() => (route.meta.title as string) || 'QR Pro')
+
+function logout(): void {
+  signOut()
+  router.push('/')
+}
 
 function isActive(path: string): boolean {
   if (path === '/') return route.path === '/'
@@ -36,16 +41,28 @@ function isActive(path: string): boolean {
 function closeSidebar(): void {
   isSidebarOpen.value = false
 }
+
+function switchTheme(): void {
+  toggle()
+  isDark.value = isDarkNow()
+}
 </script>
 
 <template>
   <div class="app-shell">
+    <!-- Fond aurora animé -->
+    <div class="aurora" aria-hidden="true">
+      <span class="blob b1"></span>
+      <span class="blob b2"></span>
+      <span class="blob b3"></span>
+    </div>
+
     <!-- Sidebar -->
-    <aside class="sidebar" :class="{ open: isSidebarOpen }">
+    <aside class="sidebar glass" :class="{ open: isSidebarOpen }">
       <router-link to="/" class="brand" @click="closeSidebar">
         <span class="brand-mark">▣</span>
         <span class="brand-text">
-          <span class="brand-name">QR Pro</span>
+          <span class="brand-name">QR<span class="gradient-text">Pro</span></span>
           <span class="brand-sub">Studio QR codes</span>
         </span>
       </router-link>
@@ -70,31 +87,27 @@ function closeSidebar(): void {
       </nav>
 
       <div class="sidebar-foot">
-        <div class="foot-card">
-          <span class="foot-emoji">⚡</span>
-          <div>
-            <strong>PWA prête</strong>
-            <small>Vue 3 · Supabase</small>
-          </div>
-        </div>
+        <router-link
+          v-if="!isAuthenticated"
+          to="/login"
+          class="auth-btn login"
+          @click="closeSidebar"
+        >
+          <span>🔐</span> Connexion admin
+        </router-link>
+        <button v-else class="auth-btn logout" @click="logout">
+          <span>↩︎</span> Déconnexion
+        </button>
       </div>
     </aside>
 
     <!-- Overlay mobile -->
-    <div
-      v-if="isSidebarOpen"
-      class="overlay"
-      @click="closeSidebar"
-    ></div>
+    <div v-if="isSidebarOpen" class="overlay" @click="closeSidebar"></div>
 
     <!-- Zone principale -->
     <div class="main-area">
-      <header class="topbar">
-        <button
-          class="burger"
-          aria-label="Menu"
-          @click="isSidebarOpen = !isSidebarOpen"
-        >
+      <header class="topbar glass">
+        <button class="burger" aria-label="Menu" @click="isSidebarOpen = !isSidebarOpen">
           <span></span><span></span><span></span>
         </button>
         <div class="topbar-title">
@@ -102,6 +115,13 @@ function closeSidebar(): void {
           <span class="sep">/</span>
           <strong>{{ pageTitle }}</strong>
         </div>
+        <button
+          class="theme-toggle"
+          :aria-label="isDark ? 'Passer en clair' : 'Passer en sombre'"
+          @click="switchTheme"
+        >
+          <span class="theme-ico">{{ isDark ? '☀️' : '🌙' }}</span>
+        </button>
       </header>
 
       <main class="content">
@@ -115,12 +135,67 @@ function closeSidebar(): void {
 
 <style scoped>
 .app-shell {
+  position: relative;
   min-height: 100dvh;
   display: flex;
-  background:
-    radial-gradient(1200px 600px at 100% -10%, rgba(168, 85, 247, 0.12), transparent 60%),
-    radial-gradient(1000px 600px at -10% 10%, rgba(99, 102, 241, 0.14), transparent 55%),
-    #f5f6fb;
+  isolation: isolate;
+}
+
+/* ---------- Fond aurora ---------- */
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.55;
+  will-change: transform;
+}
+
+.b1 {
+  width: 520px;
+  height: 520px;
+  top: -160px;
+  right: -120px;
+  background: radial-gradient(circle, var(--brand-3), transparent 70%);
+  animation: drift1 22s ease-in-out infinite;
+}
+
+.b2 {
+  width: 480px;
+  height: 480px;
+  top: 10%;
+  left: -160px;
+  background: radial-gradient(circle, var(--brand-1), transparent 70%);
+  animation: drift2 26s ease-in-out infinite;
+}
+
+.b3 {
+  width: 420px;
+  height: 420px;
+  bottom: -160px;
+  left: 40%;
+  background: radial-gradient(circle, var(--brand-2), transparent 70%);
+  animation: drift3 30s ease-in-out infinite;
+}
+
+@keyframes drift1 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-60px, 80px); }
+}
+@keyframes drift2 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(80px, 40px); }
+}
+@keyframes drift3 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-50px, -60px); }
 }
 
 /* ---------- Sidebar ---------- */
@@ -129,16 +204,13 @@ function closeSidebar(): void {
   top: 0;
   align-self: flex-start;
   height: 100dvh;
-  width: 276px;
+  width: 278px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   padding: 1.5rem 1rem;
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-right: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 12px 0 40px rgba(15, 23, 42, 0.04);
+  border-right: 1px solid var(--border);
+  border-radius: 0;
   z-index: 50;
 }
 
@@ -147,19 +219,19 @@ function closeSidebar(): void {
   align-items: center;
   gap: 0.75rem;
   text-decoration: none;
-  padding: 0.5rem 0.5rem 1.25rem;
+  padding: 0.35rem 0.5rem 1.25rem;
 }
 
 .brand-mark {
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   display: grid;
   place-items: center;
-  font-size: 1.4rem;
+  font-size: 1.45rem;
   color: #fff;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #6366f1, #a855f7);
-  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+  border-radius: var(--r-md);
+  background: var(--grad-brand);
+  box-shadow: var(--sh-brand);
 }
 
 .brand-text {
@@ -170,14 +242,15 @@ function closeSidebar(): void {
 
 .brand-name {
   font-weight: 800;
-  font-size: 1.2rem;
-  color: #0f172a;
+  font-size: 1.3rem;
+  color: var(--text);
+  letter-spacing: -0.02em;
 }
 
 .brand-sub {
   font-size: 0.72rem;
   font-weight: 600;
-  color: #94a3b8;
+  color: var(--text-mut);
   letter-spacing: 0.02em;
 }
 
@@ -189,12 +262,12 @@ function closeSidebar(): void {
 }
 
 .nav-label {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: #b4bccc;
-  margin: 0.5rem 0.75rem 0.5rem;
+  letter-spacing: 0.14em;
+  color: var(--text-mut);
+  margin: 0.5rem 0.75rem;
 }
 
 .nav-item {
@@ -202,28 +275,28 @@ function closeSidebar(): void {
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  padding: 0.7rem 0.8rem;
-  border-radius: 14px;
+  padding: 0.65rem 0.7rem;
+  border-radius: var(--r-md);
   text-decoration: none;
-  color: #475569;
+  color: var(--text-soft);
   transition: all 0.22s ease;
 }
 
 .nav-item:hover {
-  background: rgba(99, 102, 241, 0.08);
-  color: #4f46e5;
+  background: var(--grad-brand-soft);
+  color: var(--brand-1);
 }
 
 .nav-icon {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  font-size: 1.1rem;
-  border-radius: 11px;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(226, 232, 240, 0.9);
+  font-size: 1.15rem;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   transition: all 0.22s ease;
 }
 
@@ -240,7 +313,7 @@ function closeSidebar(): void {
 
 .nav-desc {
   font-size: 0.72rem;
-  color: #94a3b8;
+  color: var(--text-mut);
 }
 
 .nav-dot {
@@ -253,9 +326,9 @@ function closeSidebar(): void {
 }
 
 .nav-item.active {
-  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  background: var(--grad-brand);
   color: #fff;
-  box-shadow: 0 12px 24px rgba(79, 70, 229, 0.32);
+  box-shadow: var(--sh-brand);
 }
 
 .nav-item.active .nav-icon {
@@ -264,7 +337,7 @@ function closeSidebar(): void {
 }
 
 .nav-item.active .nav-desc {
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .nav-item.active .nav-dot {
@@ -282,9 +355,9 @@ function closeSidebar(): void {
   align-items: center;
   gap: 0.7rem;
   padding: 0.85rem;
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.08));
-  border: 1px solid rgba(99, 102, 241, 0.14);
+  border-radius: var(--r-md);
+  background: var(--grad-brand-soft);
+  border: 1px solid var(--border);
 }
 
 .foot-emoji {
@@ -294,19 +367,57 @@ function closeSidebar(): void {
 .foot-card strong {
   display: block;
   font-size: 0.82rem;
-  color: #0f172a;
+  color: var(--text);
 }
 
 .foot-card small {
   font-size: 0.72rem;
-  color: #64748b;
+  color: var(--text-mut);
+}
+
+.auth-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: var(--r-md);
+  font: inherit;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.auth-btn.login {
+  color: #fff;
+  background: var(--grad-brand);
+  border: 1px solid transparent;
+  box-shadow: var(--sh-brand);
+}
+
+.auth-btn.login:hover {
+  transform: translateY(-2px);
+}
+
+.auth-btn.logout {
+  color: var(--text-soft);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.auth-btn.logout:hover {
+  color: var(--danger);
+  border-color: var(--danger);
 }
 
 /* ---------- Overlay ---------- */
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(15, 23, 42, 0.5);
   backdrop-filter: blur(2px);
   z-index: 40;
 }
@@ -326,11 +437,9 @@ function closeSidebar(): void {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.9rem 1.5rem;
-  background: rgba(245, 246, 251, 0.7);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+  padding: 0.85rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
 }
 
 .topbar-title {
@@ -338,20 +447,40 @@ function closeSidebar(): void {
   align-items: center;
   gap: 0.5rem;
   font-size: 0.95rem;
-  color: #0f172a;
+  color: var(--text);
 }
 
 .crumb {
-  color: #94a3b8;
+  color: var(--text-mut);
   font-weight: 600;
 }
 
 .sep {
-  color: #cbd5e1;
+  color: var(--border-strong);
 }
 
 .topbar-title strong {
   font-weight: 700;
+}
+
+.theme-toggle {
+  margin-left: auto;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sh-md);
+  border-color: var(--brand-1);
 }
 
 .burger {
@@ -361,9 +490,9 @@ function closeSidebar(): void {
   gap: 5px;
   width: 42px;
   height: 42px;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
   cursor: pointer;
   padding: 0 10px;
 }
@@ -371,14 +500,14 @@ function closeSidebar(): void {
 .burger span {
   height: 2px;
   width: 100%;
-  background: #334155;
+  background: var(--text-soft);
   border-radius: 2px;
   transition: all 0.2s;
 }
 
 .content {
   flex: 1;
-  padding: 2rem 1.5rem 3rem;
+  padding: 2.25rem 1.75rem 3.5rem;
 }
 
 .content-inner {
@@ -394,7 +523,7 @@ function closeSidebar(): void {
     top: 0;
     transform: translateX(-100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 20px 0 60px rgba(15, 23, 42, 0.18);
+    box-shadow: var(--sh-lg);
   }
 
   .sidebar.open {
@@ -412,7 +541,7 @@ function closeSidebar(): void {
   }
 
   .topbar {
-    padding: 0.75rem 1rem;
+    padding: 0.7rem 1rem;
   }
 }
 </style>

@@ -3,6 +3,7 @@ import crypto from 'node:crypto'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import db from '../db.js'
+import { requireAuth } from '../auth.js'
 
 const router = Router()
 const UPLOADS_DIR = resolve(import.meta.dirname, '..', '..', 'uploads', 'qrcodes')
@@ -14,7 +15,7 @@ function ensureDir(dir) {
   mkdirSync(dir, { recursive: true })
 }
 
-router.post('/', async (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
   try {
     const { url, imageDataUrl, format, size, margin, foreground, background, errorCorrectionLevel } = req.body
 
@@ -49,7 +50,7 @@ router.post('/', async (req, res) => {
   }
 })
 
-router.get('/', async (_req, res) => {
+router.get('/', requireAuth, async (_req, res) => {
   try {
     const result = await db.query(
       `SELECT ${QR_COLUMNS} FROM qr_codes ORDER BY created_at DESC`
@@ -109,7 +110,7 @@ router.get('/:id', async (req, res) => {
   }
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params
     const result = await db.query('DELETE FROM qr_codes WHERE id = ?', [id])

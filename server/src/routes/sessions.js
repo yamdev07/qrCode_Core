@@ -1,10 +1,11 @@
 import { Router } from 'express'
 import crypto from 'node:crypto'
 import db from '../db.js'
+import { requireAuth } from '../auth.js'
 
 const router = Router()
 
-router.get('/', async (_req, res) => {
+router.get('/', requireAuth, async (_req, res) => {
   try {
     const result = await db.query(`
       SELECT s.*,
@@ -19,7 +20,7 @@ router.get('/', async (_req, res) => {
   }
 })
 
-router.post('/', async (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
   try {
     const { nom, code_unique, date } = req.body
     if (!nom) return res.status(400).json({ error: 'Le nom est requis' })
@@ -59,7 +60,7 @@ router.get('/lookup', async (req, res) => {
   }
 })
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params
     const result = await db.query('SELECT * FROM sessions WHERE id = ?', [id])
@@ -73,7 +74,7 @@ router.get('/:id', async (req, res) => {
   }
 })
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params
     const existing = await db.query('SELECT * FROM sessions WHERE id = ?', [id])
@@ -102,7 +103,7 @@ router.put('/:id', async (req, res) => {
   }
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params
     const result = await db.query('DELETE FROM sessions WHERE id = ?', [id])

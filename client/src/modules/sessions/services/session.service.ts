@@ -1,6 +1,7 @@
 import { ApiError, NotFoundError } from '@core/errors/AppError'
 import { log } from '@core/logger/logger'
 import { publicUrl } from '@core/config/appConfig'
+import { authFetch } from '@core/api/authFetch'
 import type { Session, SessionFormData, SessionWithPresenceCount } from '@modules/sessions/types/session.types'
 
 const API = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api'
@@ -10,7 +11,7 @@ function generateUniqueCode(): string {
 }
 
 export async function createSession(data: SessionFormData): Promise<Session> {
-  const res = await fetch(`${API}/sessions`, {
+  const res = await authFetch(`${API}/sessions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -29,7 +30,7 @@ export async function createSession(data: SessionFormData): Promise<Session> {
 }
 
 export async function getSessions(): Promise<SessionWithPresenceCount[]> {
-  const res = await fetch(`${API}/sessions`)
+  const res = await authFetch(`${API}/sessions`)
   if (!res.ok) throw new ApiError('Impossible de récupérer les sessions', 500)
   const sessions: SessionWithPresenceCount[] = await res.json()
   return sessions.map(s => ({
@@ -39,7 +40,7 @@ export async function getSessions(): Promise<SessionWithPresenceCount[]> {
 }
 
 export async function getSessionById(id: string): Promise<Session> {
-  const res = await fetch(`${API}/sessions/${id}`)
+  const res = await authFetch(`${API}/sessions/${id}`)
   if (res.status === 404) throw new NotFoundError('Session introuvable', { sessionId: id })
   if (!res.ok) throw new ApiError('Erreur serveur', 500)
   return res.json()
@@ -53,7 +54,7 @@ export async function getSessionByCode(code: string): Promise<Session> {
 }
 
 export async function updateSession(id: string, data: Partial<SessionFormData>): Promise<Session> {
-  const res = await fetch(`${API}/sessions/${id}`, {
+  const res = await authFetch(`${API}/sessions/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
@@ -64,7 +65,7 @@ export async function updateSession(id: string, data: Partial<SessionFormData>):
 }
 
 export async function deleteSession(id: string): Promise<void> {
-  const res = await fetch(`${API}/sessions/${id}`, { method: 'DELETE' })
+  const res = await authFetch(`${API}/sessions/${id}`, { method: 'DELETE' })
   if (!res.ok) throw new ApiError('Impossible de supprimer la session', 500)
   log.info(`Session supprimée: ${id}`)
 }

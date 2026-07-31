@@ -7,121 +7,322 @@ const features = [
   {
     icon: '✨',
     title: 'Générer',
-    description: 'Créez des QR codes pour vos liens, texte ou sessions',
+    description: 'Créez des QR codes pour vos liens, textes ou sessions.',
     route: '/generate',
-    color: '#6366f1'
+    tint: 'var(--brand-1)'
+  },
+  {
+    icon: '🎴',
+    title: 'Cartes pro',
+    description: 'Générez des cartes de visite scannables en lot.',
+    route: '/cards',
+    tint: 'var(--brand-3)'
   },
   {
     icon: '📷',
     title: 'Scanner',
-    description: 'Scannez un QR code pour marquer votre présence',
+    description: 'Lisez un QR code pour marquer une présence.',
     route: '/scan',
-    color: '#22c55e'
+    tint: 'var(--ok)'
   },
   {
     icon: '📋',
     title: 'Sessions',
-    description: 'Gerez vos sessions et suivez les présences',
+    description: 'Gérez vos sessions et suivez les présences.',
     route: '/sessions',
-    color: '#f59e0b'
+    tint: 'var(--warn)'
   }
+]
+
+const steps = [
+  { n: '01', t: 'Saisissez', d: 'Un lien, un texte ou les infos d’une carte.' },
+  { n: '02', t: 'Générez', d: 'Le QR code est créé et stocké instantanément.' },
+  { n: '03', t: 'Partagez', d: 'Imprimez ou diffusez, il pointe vers votre domaine.' }
 ]
 </script>
 
 <template>
   <div class="home">
-    <div class="hero">
-      <h1 class="hero-title">QRCode Pro</h1>
-      <p class="hero-subtitle">
-        Générez, scannez et gérez vos présences en toute simplicité
-      </p>
-    </div>
-
-    <div class="features-grid">
-      <div
-        v-for="feature in features"
-        :key="feature.route"
-        class="feature-card"
-        :style="{ '--accent': feature.color }"
-        @click="router.push(feature.route)"
-      >
-        <span class="feature-icon">{{ feature.icon }}</span>
-        <h3 class="feature-title">{{ feature.title }}</h3>
-        <p class="feature-description">{{ feature.description }}</p>
+    <!-- Hero -->
+    <section class="hero card">
+      <div class="hero-copy">
+        <span class="badge">⚡ Studio QR codes · v1.0</span>
+        <h1 class="hero-title">
+          Vos QR codes,<br />
+          <span class="gradient-text">élégants et durables.</span>
+        </h1>
+        <p class="hero-sub">
+          Générez, scannez et gérez vos présences depuis une seule application —
+          rapide, hors-ligne, et prête à imprimer.
+        </p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" @click="router.push('/generate')">
+            ✨ Générer un QR code
+          </button>
+          <button class="btn btn-ghost" @click="router.push('/scan')">
+            📷 Scanner
+          </button>
+        </div>
       </div>
-    </div>
+
+      <!-- Motif QR décoratif -->
+      <div class="hero-visual" aria-hidden="true">
+        <div class="qr-frame">
+          <div class="qr-grid">
+            <span v-for="i in 49" :key="i" class="qr-cell" :style="{ '--d': i }"></span>
+          </div>
+          <span class="qr-eye tl"></span>
+          <span class="qr-eye tr"></span>
+          <span class="qr-eye bl"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Fonctionnalités -->
+    <section class="section">
+      <p class="eyebrow">Fonctionnalités</p>
+      <div class="features-grid">
+        <button
+          v-for="f in features"
+          :key="f.route"
+          class="feature-card card"
+          :style="{ '--tint': f.tint }"
+          @click="router.push(f.route)"
+        >
+          <span class="feature-icon">{{ f.icon }}</span>
+          <span class="feature-body">
+            <span class="feature-title">{{ f.title }}</span>
+            <span class="feature-desc">{{ f.description }}</span>
+          </span>
+          <span class="feature-arrow">→</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Comment ça marche -->
+    <section class="section">
+      <p class="eyebrow">Comment ça marche</p>
+      <div class="steps">
+        <div v-for="s in steps" :key="s.n" class="step card">
+          <span class="step-n gradient-text">{{ s.n }}</span>
+          <h3 class="step-t">{{ s.t }}</h3>
+          <p class="step-d">{{ s.d }}</p>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
 <style scoped>
 .home {
-  padding: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
 }
 
+/* ---------- Hero ---------- */
 .hero {
-  text-align: center;
-  padding: 2rem 0 3rem;
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  align-items: center;
+  gap: 2rem;
+  padding: 2.75rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.hero-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.1rem;
 }
 
 .hero-title {
-  font-size: 2.5rem;
+  font-size: clamp(2rem, 4.5vw, 3.1rem);
   font-weight: 800;
-  color: #1e293b;
-  margin: 0 0 0.75rem;
-  background: linear-gradient(135deg, #6366f1, #a855f7);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  line-height: 1.08;
 }
 
-.hero-subtitle {
-  font-size: 1.1rem;
-  color: #64748b;
-  margin: 0;
-  max-width: 480px;
-  margin-inline: auto;
+.hero-sub {
+  color: var(--text-soft);
+  font-size: 1.05rem;
+  max-width: 42ch;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.4rem;
+}
+
+/* Motif QR animé */
+.hero-visual {
+  display: grid;
+  place-items: center;
+}
+
+.qr-frame {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  padding: 18px;
+  border-radius: var(--r-lg);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  box-shadow: var(--sh-md);
+}
+
+.qr-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(7, 1fr);
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+}
+
+.qr-cell {
+  border-radius: 3px;
+  background: var(--grad-brand);
+  opacity: 0;
+  animation: pop 3.4s ease-in-out infinite;
+  animation-delay: calc(var(--d) * 60ms);
+}
+
+@keyframes pop {
+  0%, 100% { opacity: 0.12; transform: scale(0.9); }
+  50% { opacity: 0.9; transform: scale(1); }
+}
+
+.qr-eye {
+  position: absolute;
+  width: 46px;
+  height: 46px;
+  border: 6px solid var(--brand-1);
+  border-radius: 12px;
+}
+
+.qr-eye.tl { top: 14px; left: 14px; }
+.qr-eye.tr { top: 14px; right: 14px; }
+.qr-eye.bl { bottom: 14px; left: 14px; }
+
+/* ---------- Sections ---------- */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.25rem;
-  max-width: 800px;
-  margin: 0 auto;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1rem;
 }
 
 .feature-card {
-  background: white;
-  border: 2px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 1.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.35rem;
+  text-align: left;
   cursor: pointer;
-  transition: all 0.3s;
-  text-align: center;
+  font: inherit;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
 }
 
 .feature-card:hover {
-  border-color: var(--accent);
   transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--sh-lg);
+  border-color: color-mix(in srgb, var(--tint) 55%, transparent);
 }
 
 .feature-icon {
-  font-size: 2.5rem;
-  display: block;
-  margin-bottom: 0.75rem;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--tint) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tint) 30%, transparent);
+}
+
+.feature-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
 }
 
 .feature-title {
-  font-size: 1.15rem;
-  color: #1e293b;
-  margin: 0 0 0.5rem;
+  font-weight: 800;
+  font-size: 1.02rem;
+  color: var(--text);
 }
 
-.feature-description {
-  font-size: 0.85rem;
-  color: #94a3b8;
-  margin: 0;
+.feature-desc {
+  font-size: 0.82rem;
+  color: var(--text-mut);
+  line-height: 1.4;
+}
+
+.feature-arrow {
+  color: var(--tint);
+  font-size: 1.2rem;
+  font-weight: 700;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: all 0.25s ease;
+}
+
+.feature-card:hover .feature-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ---------- Étapes ---------- */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.step {
+  padding: 1.5rem;
+}
+
+.step-n {
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.step-t {
+  font-size: 1.05rem;
+  margin: 0.4rem 0 0.3rem;
+}
+
+.step-d {
+  font-size: 0.88rem;
+  color: var(--text-mut);
   line-height: 1.5;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 820px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 2rem 1.5rem;
+  }
+
+  .hero-visual {
+    display: none;
+  }
 }
 </style>

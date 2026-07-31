@@ -1,55 +1,64 @@
 import { ref, computed } from 'vue'
-import type { Session } from '@supabase/supabase-js'
-import { supabase } from '@core/database/supabaseClient'
+import { getToken, setToken } from '@core/api/authFetch'
 import { log } from '@core/logger/logger'
 
-const session = ref<Session | null>(null)
-const isReady = ref(false)
-let initialized = false
+/**
+ * Authentification admin — compte unique, jeton signé côté serveur.
+ *
+ * Remplace l'ancienne implémentation Supabase (abandonnée avec la migration
+ * MySQL). L'état de connexion découle de la présence d'un jeton valide en
+ * localStorage ; le serveur reste seul juge de sa validité.
+ */
+const API = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api'
 
-/** Traduit les messages d'erreur d'auth Supabase courants. */
-function translateAuthError(message: string): string {
-  if (/invalid login credentials/i.test(message)) {
-    return 'Email ou mot de passe incorrect.'
-  }
-  if (/email not confirmed/i.test(message)) {
-    return "L'email n'est pas confirmé."
-  }
-  return message
-}
+const token = ref<string | null>(getToken())
+const userName = ref<string>('')
 
 export function useAuth() {
-  /** Charge la session courante et écoute les changements (une seule fois). */
-  async function init(): Promise<void> {
-    if (initialized) return
-    initialized = true
-    const { data } = await supabase.auth.getSession()
-    session.value = data.session
-    supabase.auth.onAuthStateChange((_event: string, newSession: Session | null) => {
-      session.value = newSession
-    })
-    isReady.value = true
-  }
+  const isAuthenticated = computed(() => !!token.value)
+  const userEmail = computed(() => userName.value)
 
-  async function signIn(email: string, password: string): Promise<void> {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password
+  async function signIn(username: string, password: string): Promise<void> {
+    const res = await fetch(`${API}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: username.trim(), password })
     })
-    if (error) {
-      throw new Error(translateAuthError(error.message))
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Échec de connexion' }))
+      throw new Error(err.error || 'Identifiant ou mot de passe incorrect.')
     }
-    session.value = data.session
-    log.info(`Connexion admin: ${email}`)
+    const data = await res.json()
+    token.value = data.token
+    userName.value = data.user
+    setToken(data.token)
+    log.info(`Connexion admin: ${data.user}`)
   }
 
-  async function signOut(): Promise<void> {
-    await supabase.auth.signOut()
-    session.value = null
+  function signOut(): void {
+    token.value = null
+    userName.value = ''
+    setToken(null)
   }
 
-  const isAuthenticated = computed(() => session.value !== null)
-  const userEmail = computed(() => session.value?.user.email ?? '')
+  /** Vérifie au démarrage si le jeton stocké est toujours valide. */
+  async function init(): Promise<void> {
+    if (!token.value) return
+    try {
+      const res = await fetch(`${API}/auth/me`, {
+        headers: { Authorization: `Bearer ${token.value}` }
+      })
+      if (res.ok) {
+        userName.value = (await res.json()).user
+      } else {
+        signOut()
+      }
+    } catch {
+      // Hors-ligne : on garde le jeton, le serveur tranchera au prochain appel.
+    }
+    // Réagit à un 401 émis par authFetch (jeton expiré en cours d'usage).
+    window.addEventListener('auth:expired', () => signOut())
+  }
 
-  return { session, isReady, isAuthenticated, userEmail, init, signIn, signOut }
+  return { isAuthenticated, userEmail, signIn, signOut, init }
 }

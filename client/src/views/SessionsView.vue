@@ -95,24 +95,26 @@ async function handleDelete(session: SessionWithPresenceCount): Promise<void> {
 }
 
 .view-title {
-  font-size: 1.5rem;
-  color: #1e293b;
+  font-size: clamp(1.4rem, 3vw, 1.75rem);
+  color: var(--text);
   margin: 0;
 }
 
 .btn-add {
-  padding: 0.625rem 1.25rem;
-  background: #6366f1;
-  color: white;
+  padding: 0.68rem 1.25rem;
+  background: var(--grad-brand);
+  color: #fff;
   border: none;
-  border-radius: 8px;
-  font-weight: 600;
+  border-radius: var(--r-md);
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: var(--sh-brand);
   transition: all 0.2s;
 }
 
 .btn-add:hover {
-  background: #4f46e5;
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px rgba(99, 102, 241, 0.42);
 }
 
 .section {
@@ -121,15 +123,16 @@ async function handleDelete(session: SessionWithPresenceCount): Promise<void> {
 
 .section-title {
   font-size: 1rem;
-  color: #64748b;
+  color: var(--text-soft);
   margin: 0 0 0.75rem;
 }
 
 .error-banner {
-  background: #fef2f2;
-  color: #dc2626;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.28);
   padding: 0.75rem 1rem;
-  border-radius: 8px;
+  border-radius: var(--r-md);
   text-align: center;
 }
 </style>

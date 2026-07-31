@@ -33,14 +33,14 @@ onMounted(() => {
 
 .view-title {
   text-align: center;
-  font-size: 1.5rem;
-  color: #1e293b;
+  font-size: clamp(1.4rem, 3vw, 1.75rem);
+  color: var(--text);
   margin: 0 0 0.5rem;
 }
 
 .view-subtitle {
   text-align: center;
-  color: #64748b;
+  color: var(--text-mut);
   font-size: 0.9rem;
   margin: 0 auto 2rem;
   max-width: 540px;

@@ -7,6 +7,7 @@ import cardsRouter from './routes/cards.js'
 import sessionsRouter from './routes/sessions.js'
 import presencesRouter from './routes/presences.js'
 import qrcodesRouter from './routes/qrcodes.js'
+import authRouter from './routes/auth.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -44,6 +45,7 @@ export function createApp({ getDbStatus = () => 'inconnu' } = {}) {
     })
   })
 
+  app.use('/api/auth', authRouter)
   app.use('/api', cardsRouter)
   app.use('/api/sessions', sessionsRouter)
   app.use('/api/presences', presencesRouter)

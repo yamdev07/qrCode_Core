@@ -3,6 +3,7 @@ import crypto from 'node:crypto'
 import { mkdirSync, writeFileSync, existsSync, readdirSync, unlinkSync, rmdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import db from '../db.js'
+import { requireAuth } from '../auth.js'
 
 const router = Router()
 const UPLOADS_DIR = resolve(import.meta.dirname, '..', '..', 'uploads', 'cards')
@@ -11,7 +12,7 @@ function ensureDir(dir) {
   mkdirSync(dir, { recursive: true })
 }
 
-router.post('/upload', async (req, res) => {
+router.post('/upload', requireAuth, async (req, res) => {
   try {
     const { nom, prenoms, poste, images } = req.body
     if (!nom || !images?.length) {
@@ -82,7 +83,7 @@ router.get('/card', async (req, res) => {
   }
 })
 
-router.get('/cards-list', async (_req, res) => {
+router.get('/cards-list', requireAuth, async (_req, res) => {
   try {
     const result = await db.query(
       'SELECT id AS cardId, nom, prenoms, poste, created_at AS createdAt FROM cards ORDER BY created_at DESC'
@@ -94,7 +95,7 @@ router.get('/cards-list', async (_req, res) => {
   }
 })
 
-router.delete('/card/delete/:cardId', async (req, res) => {
+router.delete('/card/delete/:cardId', requireAuth, async (req, res) => {
   try {
     const { cardId } = req.params
     const result = await db.query('DELETE FROM cards WHERE id = ?', [cardId])

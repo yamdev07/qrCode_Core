@@ -7,10 +7,10 @@ const router = useRouter()
 <template>
   <div class="not-found">
     <span class="not-found-icon">🔍</span>
-    <h1>404</h1>
+    <h1 class="gradient-text">404</h1>
     <p>Page introuvable</p>
-    <button class="btn-home" @click="router.push('/')">
-      Retour à l'accueil
+    <button class="btn btn-primary" @click="router.push('/')">
+      ← Retour à l'accueil
     </button>
   </div>
 </template>
@@ -28,29 +28,14 @@ const router = useRouter()
 }
 
 .not-found h1 {
-  font-size: 4rem;
-  color: #e2e8f0;
+  font-size: 5rem;
   margin: 0;
+  font-weight: 800;
 }
 
 .not-found p {
   font-size: 1.1rem;
-  color: #64748b;
+  color: var(--text-mut);
   margin: 0.5rem 0 2rem;
-}
-
-.btn-home {
-  padding: 0.75rem 2rem;
-  background: #6366f1;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn-home:hover {
-  background: #4f46e5;
 }
 </style>

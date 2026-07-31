@@ -79,8 +79,9 @@ onMounted(async () => {
 .btn-back {
   background: none;
   border: none;
-  color: #6366f1;
+  color: var(--brand-1);
   font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
   padding: 0;
   margin-bottom: 1.5rem;
@@ -102,16 +103,16 @@ onMounted(async () => {
 .session-meta {
   display: flex;
   gap: 1.5rem;
-  color: #64748b;
+  color: var(--text-mut);
   font-size: 0.9rem;
 }
 
 .session-meta code {
-  font-family: monospace;
-  background: #eef2ff;
+  font-family: var(--mono);
+  background: var(--grad-brand-soft);
   padding: 0.15rem 0.5rem;
-  border-radius: 4px;
-  color: #6366f1;
+  border-radius: var(--r-sm);
+  color: var(--brand-2);
 }
 
 .detail-grid {
@@ -129,7 +130,7 @@ onMounted(async () => {
 .loading, .not-found {
   text-align: center;
   padding: 3rem;
-  color: #94a3b8;
+  color: var(--text-mut);
 }
 
 @media (max-width: 700px) {

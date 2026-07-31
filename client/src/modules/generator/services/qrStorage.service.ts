@@ -1,4 +1,5 @@
 import { log } from '@core/logger/logger'
+import { authFetch } from '@core/api/authFetch'
 
 const API = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api'
 
@@ -28,7 +29,7 @@ export async function saveQrCode(
     errorCorrectionLevel?: string
   } = {}
 ): Promise<QrCodeRecord> {
-  const res = await fetch(`${API}/qrcodes`, {
+  const res = await authFetch(`${API}/qrcodes`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -54,7 +55,7 @@ export async function saveQrCode(
 }
 
 export async function getQrCodes(): Promise<QrCodeRecord[]> {
-  const res = await fetch(`${API}/qrcodes`)
+  const res = await authFetch(`${API}/qrcodes`)
   if (!res.ok) return []
   return res.json()
 }
@@ -70,7 +71,7 @@ export async function findQrCodeByUrl(url: string): Promise<QrCodeRecord | null>
 }
 
 export async function deleteQrCode(id: string): Promise<void> {
-  const res = await fetch(`${API}/qrcodes/${id}`, { method: 'DELETE' })
+  const res = await authFetch(`${API}/qrcodes/${id}`, { method: 'DELETE' })
   if (!res.ok) throw new Error('Impossible de supprimer le QR code')
   log.info(`QR code supprimé: ${id}`)
 }

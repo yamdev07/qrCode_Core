@@ -121,13 +121,13 @@ async function logout(): Promise<void> {
 }
 
 .title {
-  font-size: 1.4rem;
-  color: #0f172a;
+  font-size: clamp(1.3rem, 3vw, 1.6rem);
+  color: var(--text);
   margin: 0 0 0.25rem;
 }
 
 .sub {
-  color: #64748b;
+  color: var(--text-mut);
   font-size: 0.88rem;
   margin: 0;
 }
@@ -141,32 +141,33 @@ async function logout(): Promise<void> {
 
 .who {
   font-size: 0.8rem;
-  color: #64748b;
-  background: #f1f5f9;
+  color: var(--text-soft);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   padding: 0.4rem 0.7rem;
-  border-radius: 9999px;
+  border-radius: var(--r-full);
 }
 
 .btn-ghost {
   padding: 0.5rem 0.9rem;
-  border-radius: 11px;
-  border: 1.5px solid #e2e8f0;
-  background: #fff;
-  color: #475569;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-soft);
   font-size: 0.83rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .btn-ghost:hover {
-  border-color: #6366f1;
-  color: #4f46e5;
+  border-color: var(--brand-1);
+  color: var(--brand-1);
 }
 
 .btn-ghost.danger:hover {
-  border-color: #fecaca;
-  color: #ef4444;
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 .stats {
@@ -177,34 +178,37 @@ async function logout(): Promise<void> {
 }
 
 .stat {
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
   padding: 1.25rem 1.5rem;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
+  box-shadow: var(--sh-sm);
 }
 
 .stat-value {
-  font-size: 1.9rem;
+  font-size: 2rem;
   font-weight: 800;
-  color: #4f46e5;
   line-height: 1;
+  background: var(--grad-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .stat-label {
   font-size: 0.8rem;
-  color: #64748b;
+  color: var(--text-mut);
   margin-top: 0.35rem;
 }
 
 .table-wrap {
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
   overflow: hidden;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
+  box-shadow: var(--sh-sm);
 }
 
 .table {
@@ -217,16 +221,16 @@ async function logout(): Promise<void> {
   font-size: 0.74rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #94a3b8;
+  color: var(--text-mut);
   padding: 0.9rem 1.1rem;
-  border-bottom: 1px solid #eef2f7;
+  border-bottom: 1px solid var(--border);
 }
 
 .table td {
   padding: 0.9rem 1.1rem;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--border);
   font-size: 0.9rem;
-  color: #0f172a;
+  color: var(--text);
 }
 
 .table tbody tr:last-child td {
@@ -234,16 +238,16 @@ async function logout(): Promise<void> {
 }
 
 .table tbody tr:hover {
-  background: rgba(99, 102, 241, 0.04);
+  background: var(--grad-brand-soft);
 }
 
 .prenoms {
-  color: #475569;
+  color: var(--text-soft);
   font-weight: 400;
 }
 
 .muted {
-  color: #64748b;
+  color: var(--text-mut);
 }
 
 .num {
@@ -254,9 +258,9 @@ async function logout(): Promise<void> {
   display: inline-block;
   min-width: 2rem;
   padding: 0.25rem 0.6rem;
-  border-radius: 9999px;
-  background: #eef2ff;
-  color: #4f46e5;
+  border-radius: var(--r-full);
+  background: var(--grad-brand-soft);
+  color: var(--brand-2);
   font-weight: 700;
   font-size: 0.85rem;
 }
@@ -272,10 +276,10 @@ async function logout(): Promise<void> {
   justify-content: center;
   width: 34px;
   height: 34px;
-  border-radius: 10px;
-  border: 1.5px solid #e2e8f0;
-  background: #fff;
-  color: #475569;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-soft);
   font-size: 0.95rem;
   cursor: pointer;
   text-decoration: none;
@@ -284,15 +288,15 @@ async function logout(): Promise<void> {
 }
 
 .act:hover {
-  border-color: #6366f1;
+  border-color: var(--brand-1);
   transform: translateY(-1px);
 }
 
 .error-banner {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #991b1b;
-  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  color: var(--danger);
+  border-radius: var(--r-md);
   padding: 0.875rem;
   font-size: 0.875rem;
   margin-bottom: 1.25rem;
@@ -301,13 +305,13 @@ async function logout(): Promise<void> {
 .state {
   text-align: center;
   padding: 2.5rem;
-  color: #64748b;
+  color: var(--text-mut);
 }
 
 .state.empty {
-  background: rgba(255, 255, 255, 0.6);
-  border-radius: 18px;
-  border: 1px dashed #cbd5e1;
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  border: 1px dashed var(--border-strong);
 }
 
 .spinner {
@@ -315,8 +319,8 @@ async function logout(): Promise<void> {
   width: 18px;
   height: 18px;
   vertical-align: middle;
-  border: 2px solid #e2e8f0;
-  border-top-color: #6366f1;
+  border: 2px solid var(--border);
+  border-top-color: var(--brand-1);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }

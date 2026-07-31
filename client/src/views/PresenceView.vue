@@ -79,11 +79,11 @@ function handleCancel(): void {
 
 .session-banner h2 {
   margin: 0 0 0.25rem;
-  color: #1e293b;
+  color: var(--text);
 }
 
 .session-banner p {
-  color: #64748b;
+  color: var(--text-mut);
   margin: 0;
   font-size: 0.9rem;
 }
@@ -91,7 +91,7 @@ function handleCancel(): void {
 .loading {
   text-align: center;
   padding: 3rem;
-  color: #94a3b8;
+  color: var(--text-mut);
 }
 
 .error-state {

@@ -11,19 +11,25 @@ export const routes: RouteRecordRaw[] = [
     path: '/generate',
     name: 'generate',
     component: () => import('@/views/GenerateView.vue'),
-    meta: { title: 'Générer un QR code' }
+    meta: { title: 'Générer un QR code', requiresAuth: true }
   },
   {
     path: '/cards',
     name: 'cards',
     component: () => import('@/views/CardsView.vue'),
-    meta: { title: 'Cartes QR en lot' }
+    meta: { title: 'Cartes QR en lot', requiresAuth: true }
   },
   {
     path: '/carte/:id',
     name: 'card-view',
     component: () => import('@/views/CardViewerView.vue'),
     meta: { title: 'Carte' }
+  },
+  {
+    path: '/recherche',
+    name: 'search',
+    component: () => import('@/views/CardSearchView.vue'),
+    meta: { title: 'Rechercher un QR', requiresAuth: true }
   },
   {
     path: '/scan',
@@ -41,13 +47,13 @@ export const routes: RouteRecordRaw[] = [
     path: '/sessions',
     name: 'sessions',
     component: () => import('@/views/SessionsView.vue'),
-    meta: { title: 'Sessions' }
+    meta: { title: 'Sessions', requiresAuth: true }
   },
   {
     path: '/sessions/:id',
     name: 'session-detail',
     component: () => import('@/views/SessionDetailView.vue'),
-    meta: { title: 'Détail session' }
+    meta: { title: 'Détail session', requiresAuth: true }
   },
   {
     path: '/login',
